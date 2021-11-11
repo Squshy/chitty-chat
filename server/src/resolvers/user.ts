@@ -1,8 +1,9 @@
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
 import { User } from "../entities/User";
 import { MyContext, UsernamePasswordInput, UserResponse } from "../types";
-import { argon2d, hash as hashPassword, verify } from "argon2";
-import { validateRegister } from "../util/ValidateUsernamePasswordInput";
+import { hash as hashPassword, verify } from "argon2";
+import { validateRegister } from "../util/validateUsernamePasswordInput";
+import { handleRegisterErrors } from "../util/handleRegisterErrors";
 
 @Resolver(User)
 export class UserResolver {
@@ -15,12 +16,17 @@ export class UserResolver {
     if (errors) return { errors };
     const hashedPass = await hashPassword(options.password);
 
-    const user = await User.create({
-      email: options.email,
-      username: options.username,
-      password: hashedPass,
-    }).save();
-
+    let user;
+    try {
+      user = await User.create({
+        email: options.email,
+        username: options.username,
+        password: hashedPass,
+      }).save();
+    } catch (err) {
+      const errors = handleRegisterErrors(err.code, err.detail);
+      return { errors };
+    }
     return { user };
   }
 
