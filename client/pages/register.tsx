@@ -34,6 +34,12 @@ const Register: React.FC<RegisterProps> = ({}) => {
                   name="username"
                 />
                 <FormLabelInput
+                  label="Email"
+                  placeholder="Email"
+                  name="email"
+                  type="email"
+                />
+                <FormLabelInput
                   label="Password"
                   placeholder="Password"
                   name="password"
