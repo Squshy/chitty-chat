@@ -1,4 +1,4 @@
-import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { User } from "../entities/User";
 import { MyContext, UsernamePasswordInput, UserResponse } from "../types";
 import { hash as hashPassword, verify } from "argon2";
@@ -7,6 +7,13 @@ import { handleRegisterErrors } from "../util/handleRegisterErrors";
 
 @Resolver(User)
 export class UserResolver {
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { req }: MyContext) {
+    if (!req.session.userId) return null;
+    const user = await User.findOne({ id: req.session.userId });
+    return user;
+  }
+
   @Mutation(() => UserResponse)
   async register(
     @Arg("options") options: UsernamePasswordInput,
@@ -27,13 +34,17 @@ export class UserResolver {
       const errors = handleRegisterErrors(err.code, err.detail);
       return { errors };
     }
+
+    // auto login user after register
+    req.session.userId = user.id;
     return { user };
   }
 
   @Mutation(() => UserResponse)
   async login(
     @Arg("usernameOrEmail") usernameOrEmail: String,
-    @Arg("password") password: string
+    @Arg("password") password: string,
+    @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const user = await User.findOne(
       usernameOrEmail.includes("@")
@@ -62,6 +73,7 @@ export class UserResolver {
       };
     }
 
+    req.session.userId = user.id;
     return { user };
   }
 }

@@ -2,6 +2,12 @@ import { Request, Response } from "express";
 import { InputType, Field, ObjectType } from "type-graphql";
 import { User } from "./entities/User";
 
+declare module "express-session" {
+  interface SessionData {
+    userId: number;
+  }
+}
+
 export type MyContext = {
   req: Request;
   res: Response;
