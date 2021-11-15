@@ -4,6 +4,7 @@ import { MyContext, UsernamePasswordInput, UserResponse } from "../types";
 import { hash as hashPassword, verify } from "argon2";
 import { validateRegister } from "../util/validateUsernamePasswordInput";
 import { handleRegisterErrors } from "../util/handleRegisterErrors";
+import { COOKIE_NAME } from "../constants";
 
 @Resolver(User)
 export class UserResolver {
@@ -75,5 +76,20 @@ export class UserResolver {
 
     req.session.userId = user.id;
     return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) =>
+      req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME);
+        if (err) {
+          console.log("logout error:", err);
+          resolve(false);
+          return;
+        }
+        resolve(true);
+      })
+    );
   }
 }

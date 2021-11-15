@@ -39,7 +39,7 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 364 * 10, // 10 years
         httpOnly: true,
-        sameSite: __prod__ ? 'lax' : 'lax', // none is needed for apollographql sandbox
+        sameSite: 'lax', // none is needed for apollographql sandbox
         secure: __prod__, // cookie only works in https
       },
       saveUninitialized: false,
