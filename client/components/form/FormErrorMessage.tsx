@@ -5,5 +5,5 @@ interface FormErrorMessageProps {
 }
 
 export const FormErrorMessage: React.FC<FormErrorMessageProps> = ({ text }) => {
-  return <p className="text-red-500 text-xs italic">{text}</p>;
+  return <p className="text-[#DA0037] text-xs">{text}</p>;
 };

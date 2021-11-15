@@ -18,7 +18,7 @@ export const FormLabelInput: React.FC<FormLabelInputProps> = ({label, ...props})
         {label}
       </label>
       <input
-        className="appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight focus:outline-none focus:ring ring-purple-300"
+        className={`appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight focus:outline-none focus:ring focus:ring-[#00ADB5] ${error && 'border-[#DA0037] border'}`}
         {...field}
         {...props}
         id={field.name}

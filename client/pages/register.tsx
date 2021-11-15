@@ -2,8 +2,8 @@ import React from "react";
 import { Form, Formik } from "formik";
 import { FormLabelInput } from "../components/form/FormLabelInput";
 import { Wrapper } from "../components/form/Wrapper";
-import { useMutation } from "@apollo/client";
 import { useRegisterMutation } from "../generated/graphql";
+import { toErrorMap } from "../utils/toErrorMap";
 
 interface FormValues {
   username: string;
@@ -19,14 +19,17 @@ const Register: React.FC<RegisterProps> = ({}) => {
     <Wrapper>
       <Formik
         initialValues={{ email: "", username: "", password: "" }}
-        onSubmit={(values) => {
+        onSubmit={async (values, { setErrors }) => {
           console.log(values);
-          return register({ variables: { options: values } });
+          const response = await register({ variables: { options: values } });
+          if (response.data?.register.errors) {
+            setErrors(toErrorMap(response.data.register.errors));
+          }
         }}
       >
         {(values: FormValues, handleChange) => (
-          <div className="w-full flex min-h-screen bg-purple-900 justify-center">
-            <Form className="max-w-md flex items-center bg-purple-600 p-12 align-center self-center rounded-md shadow-md">
+          <div className="w-full flex min-h-screen bg-gray-100 justify-center">
+            <Form className="w-md flex items-center bg-white p-12 align-center self-center rounded-md shadow-md">
               <div className="space-y-4">
                 <FormLabelInput
                   label="Username"
