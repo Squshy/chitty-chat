@@ -12,13 +12,13 @@ export const FormLabelInput: React.FC<FormLabelInputProps> = ({label, ...props})
   return (
     <div>
       <label
-        className="block text-white font-semibold text-md"
+        className="block font-semibold text-md"
         htmlFor={field.name}
       >
         {label}
       </label>
       <input
-        className={`appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight focus:outline-none focus:ring focus:ring-[#00ADB5] ${error && 'border-[#DA0037] border'}`}
+        className={`appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight focus:outline-none focus:ring  ${error && 'border-[#DA0037] border'}`}
         {...field}
         {...props}
         id={field.name}

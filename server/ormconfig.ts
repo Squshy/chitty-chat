@@ -10,6 +10,7 @@ const config: ConnectionOptions = {
   username: "postgres",
   password: "postgres",
   database: "chittychat",
+  synchronize: false,
   entities: [path.join(__dirname, "src/entities/*.js")],
   migrations: [path.join(__dirname, "src/migrations/*.js")],
   cli: {

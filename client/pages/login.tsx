@@ -2,37 +2,36 @@ import React from "react";
 import { Form, Formik } from "formik";
 import { FormLabelInput } from "../components/form/FormLabelInput";
 import { Wrapper } from "../components/form/Wrapper";
-import { MeDocument, MeQuery, useRegisterMutation } from "../generated/graphql";
+import { MeDocument, MeQuery, useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/dist/client/router";
 
-interface RegisterProps {}
+interface LoginProps {}
 
-const Register: React.FC<RegisterProps> = ({}) => {
+const Login: React.FC<LoginProps> = ({}) => {
   const router = useRouter();
-  const [register, { data, loading, error }] = useRegisterMutation();
-
+  const [login, { data, loading, error }] = useLoginMutation();
+  if (error) return <div>{error.message}</div>;
   return (
     <Wrapper>
       <Formik
-        initialValues={{ email: "", username: "", password: "" }}
-        onSubmit={async (values, { setErrors }) => {
-          console.log(values);
-          const response = await register({
-            variables: { options: values },
+        initialValues={{ usernameOrEmail: "", password: "" }}
+        onSubmit={async ({ usernameOrEmail, password }, { setErrors }) => {
+          const response = await login({
+            variables: { password, usernameOrEmail },
             update: (cache, { data }) => {
               cache.writeQuery<MeQuery>({
                 query: MeDocument,
                 data: {
                   __typename: "Query",
-                  me: data?.register.user,
+                  me: data?.login.user,
                 },
               });
             },
           });
-          if (response.data?.register.errors) {
-            setErrors(toErrorMap(response.data.register.errors));
-          } else if (response.data?.register.user) {
+          if (response.data?.login.errors) {
+            setErrors(toErrorMap(response.data.login.errors));
+          } else if (response.data?.login.user) {
             router.push("/");
           }
         }}
@@ -41,15 +40,9 @@ const Register: React.FC<RegisterProps> = ({}) => {
           <Form className="w-md flex items-center bg-white p-12 align-center self-center rounded-md shadow-md">
             <div className="space-y-4">
               <FormLabelInput
-                label="Username"
-                placeholder="Username"
-                name="username"
-              />
-              <FormLabelInput
-                label="Email"
-                placeholder="Email"
-                name="email"
-                type="email"
+                label="Username/Email"
+                placeholder="Username/Email"
+                name="usernameOrEmail"
               />
               <FormLabelInput
                 label="Password"
@@ -57,7 +50,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
                 name="password"
                 type="password"
               />
-              <button type="submit">Register</button>
+              <button type="submit">Login</button>
             </div>
           </Form>
         </div>
@@ -66,4 +59,4 @@ const Register: React.FC<RegisterProps> = ({}) => {
   );
 };
 
-export default Register;
+export default Login;

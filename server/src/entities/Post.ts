@@ -4,8 +4,8 @@ import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @ObjectType()
 @Entity()
 export class Post extends BaseEntity {
-  @Field()
-  @PrimaryGeneratedColumn()
+  @Field(() => String)
+  @PrimaryGeneratedColumn("uuid")
   id!: number;
 
   @Field()
