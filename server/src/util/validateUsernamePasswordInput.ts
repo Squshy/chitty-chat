@@ -26,7 +26,7 @@ export const validateRegister = (options: UsernamePasswordInput) => {
       },
     ];
   }
-  const validPass = validatePassword(options.password);
+  const validPass = validatePassword(options.password, 'password');
   if (validPass) return validPass;
   return null;
 };

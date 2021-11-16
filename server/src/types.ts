@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { InputType, Field, ObjectType } from "type-graphql";
 import { User } from "./entities/User";
+import { Redis } from "ioredis";
 
 declare module "express-session" {
   interface SessionData {
@@ -11,6 +12,7 @@ declare module "express-session" {
 export type MyContext = {
   req: Request;
   res: Response;
+  redis: Redis;
 };
 
 /*   INPUT TYPES   */

@@ -5,11 +5,12 @@ import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import cors from "cors";
+import "dotenv-safe/config";
 import config from "./dbconfig";
 import { UserResolver } from "./resolvers/user";
 import session from "express-session";
 import connectRedis from "connect-redis";
-import redisClient from "./redisClient";
+import redis from "./redisClient";
 import { MyContext } from "./types";
 import path from "path";
 import { User } from "./entities/User";
@@ -17,9 +18,9 @@ import { User } from "./entities/User";
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
-    database: 'chittychat',
-    username: 'postgres',
-    password: 'postgres',
+    database: "chittychat",
+    username: "postgres",
+    password: "postgres",
     logging: true,
     // synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
@@ -32,7 +33,7 @@ const main = async () => {
 
   app.use(
     cors({
-      origin: ["https://studio.apollographql.com", 'http://localhost:3000'],
+      origin: ["https://studio.apollographql.com", "http://localhost:3000"],
       credentials: true,
     })
   );
@@ -43,14 +44,14 @@ const main = async () => {
     session({
       name: COOKIE_NAME,
       store: new RedisStore({
-        client: redisClient,
+        client: redis,
         disableTTL: true,
         disableTouch: true,
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 364 * 10, // 10 years
         httpOnly: true,
-        sameSite: 'lax', // none is needed for apollographql sandbox
+        sameSite: "lax", // none is needed for apollographql sandbox
         secure: __prod__, // cookie only works in https
       },
       saveUninitialized: false,
@@ -65,13 +66,13 @@ const main = async () => {
       validate: false,
     }),
     // context is object accessible by all resolvers
-    context: ({ req, res }): MyContext => ({ req, res }),
+    context: ({ req, res }): MyContext => ({ req, res, redis }),
   });
 
   await apolloServer.start();
   apolloServer.applyMiddleware({
     app,
-    cors: false
+    cors: false,
   });
 
   app.listen(4000, () => {
