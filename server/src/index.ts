@@ -5,16 +5,27 @@ import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import cors from "cors";
-import { PostResolver } from "./resolvers/post";
-import config from "../ormconfig";
+import config from "./dbconfig";
 import { UserResolver } from "./resolvers/user";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import redisClient from "./redisClient";
 import { MyContext } from "./types";
+import path from "path";
+import { User } from "./entities/User";
 
 const main = async () => {
-  const conn = await createConnection(config);
+  const conn = await createConnection({
+    type: "postgres",
+    database: 'chittychat',
+    username: 'postgres',
+    password: 'postgres',
+    logging: true,
+    // synchronize: true,
+    migrations: [path.join(__dirname, "./migrations/*")],
+    entities: [User],
+  });
+  // await conn.runMigrations();
 
   const app = express();
   let RedisStore = connectRedis(session);
@@ -50,7 +61,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [PostResolver, UserResolver],
+      resolvers: [UserResolver],
       validate: false,
     }),
     // context is object accessible by all resolvers

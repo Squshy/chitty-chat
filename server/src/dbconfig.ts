@@ -1,5 +1,5 @@
 import { ConnectionOptions } from "typeorm";
-import { __prod__ } from "./src/constants";
+import { __prod__ } from "./constants";
 import path from "path";
 
 const config: ConnectionOptions = {
@@ -10,13 +10,9 @@ const config: ConnectionOptions = {
   username: "postgres",
   password: "postgres",
   database: "chittychat",
-  synchronize: false,
-  entities: [path.join(__dirname, "src/entities/*.js")],
-  migrations: [path.join(__dirname, "src/migrations/*.js")],
-  cli: {
-    entitiesDir: "src/entities",
-    migrationsDir: "src/migrations",
-  },
+  synchronize: true,
+  entities: [path.join(__dirname, "./entities/*")],
+  migrations: [path.join(__dirname, "./migrations/*")]
 };
 
 export = config;

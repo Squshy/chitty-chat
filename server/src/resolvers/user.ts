@@ -5,6 +5,7 @@ import { hash as hashPassword, verify } from "argon2";
 import { validateRegister } from "../util/validateUsernamePasswordInput";
 import { handleRegisterErrors } from "../util/handleRegisterErrors";
 import { COOKIE_NAME } from "../constants";
+import { getConnection, ILike,  } from "typeorm";
 
 @Resolver(User)
 export class UserResolver {
@@ -29,6 +30,7 @@ export class UserResolver {
       user = await User.create({
         email: options.email,
         username: options.username,
+        displayName: options.username,
         password: hashedPass,
       }).save();
     } catch (err) {
@@ -91,5 +93,22 @@ export class UserResolver {
         resolve(true);
       })
     );
+  }
+
+  @Query(() => [User], { nullable: true })
+  async searchForUser(@Arg("username") username: String) {
+    const results = await getConnection()
+      .createQueryBuilder()
+      .select(`*, username <-> '${username}' AS dist`)
+      .from(User, "user")
+      .orderBy(`dist`)
+      .limit(10)
+      .getRawMany();
+
+    // const results = await User.find({
+    //   where: { username: ILike(`%${username}%`) },
+    //   take: 10,
+    // });
+    return results;
   }
 }
