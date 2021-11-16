@@ -5,7 +5,7 @@ import { hash as hashPassword, verify } from "argon2";
 import { validateRegister } from "../util/validateUsernamePasswordInput";
 import { handleRegisterErrors } from "../util/handleRegisterErrors";
 import { COOKIE_NAME } from "../constants";
-import { getConnection, ILike,  } from "typeorm";
+import { getConnection, ILike } from "typeorm";
 
 @Resolver(User)
 export class UserResolver {
@@ -104,11 +104,6 @@ export class UserResolver {
       .orderBy(`dist`)
       .limit(10)
       .getRawMany();
-
-    // const results = await User.find({
-    //   where: { username: ILike(`%${username}%`) },
-    //   take: 10,
-    // });
     return results;
   }
 }
