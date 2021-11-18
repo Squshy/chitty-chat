@@ -5,6 +5,7 @@ import { Wrapper } from "../components/form/Wrapper";
 import { MeDocument, MeQuery, useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/dist/client/router";
+import Link from "next/link";
 
 interface LoginProps {}
 
@@ -50,7 +51,12 @@ const Login: React.FC<LoginProps> = ({}) => {
                 name="password"
                 type="password"
               />
-              <button type="submit">Login</button>
+              <div className="flex justify-between items-center">
+                <button type="submit">Login</button>
+                <Link href="/forgot-password">
+                  <a className="text-xs">Forgot password?</a>
+                </Link>
+              </div>
             </div>
           </Form>
         </div>

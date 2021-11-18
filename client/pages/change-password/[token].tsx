@@ -7,6 +7,7 @@ import { FormLabelInput } from "../../components/form/FormLabelInput";
 import { Wrapper } from "../../components/form/Wrapper";
 import { useChangePasswordMutation } from "../../generated/graphql";
 import { toErrorMap } from "../../utils/toErrorMap";
+import Link from "next/link";
 
 const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
   const [changePassword] = useChangePasswordMutation();
@@ -17,7 +18,7 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
         <Formik
           initialValues={{ newPassword: "" }}
           onSubmit={async ({ newPassword }, { setErrors }) => {
-            setTokenError('')
+            setTokenError("");
             const response = await changePassword({
               variables: { newPassword, token },
             });
@@ -42,7 +43,14 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
                     name="newPassword"
                     type="password"
                   />
-                  {tokenError && <FormErrorMessage text={tokenError} />}
+                  {tokenError && (
+                    <div className="flex justify-between items-center">
+                      <FormErrorMessage text={tokenError} />
+                      <Link href="/forgot-password">
+                        <a className="text-xs">Forgot Password</a>
+                      </Link>
+                    </div>
+                  )}
                   <button
                     type="submit"
                     className={`${

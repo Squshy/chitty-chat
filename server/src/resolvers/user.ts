@@ -1,4 +1,11 @@
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import { User } from "../entities/User";
 import { MyContext, UsernamePasswordInput, UserResponse } from "../types";
 import { hash as hashPassword, verify } from "argon2";
@@ -14,6 +21,8 @@ import { getConnection } from "typeorm";
 import { sendEmail } from "../util/sendEmail";
 import { v4 as uuid } from "uuid";
 import { validatePassword } from "../util/validatePassword";
+import { isAuth } from "../middleware/isAuth";
+import { Friend } from "../entities/Friend";
 
 @Resolver(User)
 export class UserResolver {
@@ -104,6 +113,7 @@ export class UserResolver {
   }
 
   @Query(() => [User], { nullable: true })
+  @UseMiddleware(isAuth)
   async searchForUser(@Arg("username") username: String) {
     const results = await getConnection()
       .createQueryBuilder()
@@ -113,6 +123,44 @@ export class UserResolver {
       .limit(10)
       .getRawMany();
     return results;
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async addFriend(
+    @Arg("userToAdd") userToAdd: string,
+    @Ctx() { req }: MyContext
+  ) {
+    const me = await User.findOne(req.session.userId);
+    if (!me) return false;
+    const friendToAdd = await User.findOne({ username: userToAdd });
+    if (!friendToAdd) return false;
+
+    await Friend.create({
+      confirmed: false,
+      friend: friendToAdd,
+      user: me,
+    }).save();
+
+    return true;
+  }
+
+  @Query(() => [User])
+  @UseMiddleware(isAuth)
+  async getFriends(@Ctx() { req }: MyContext): Promise<User[]> {
+    const friends: User[] = await getConnection().query(
+      ` SELECT * 
+        FROM "user" U
+        WHERE U.id <> $1
+          AND EXISTS(
+            SELECT 1
+            FROM friend F
+            WHERE (F."user_id" = $1 AND F."friend_id" = U.id )
+            OR (F."user_id" = $1 AND F."friend_id" = U.id )
+            );`,
+      [req.session.userId]
+    );
+    return friends;
   }
 
   @Mutation(() => Boolean)

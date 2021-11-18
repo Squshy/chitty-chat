@@ -4,24 +4,19 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Friend } from "./Friend";
 
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
   @Field(() => String)
   @PrimaryGeneratedColumn("uuid")
-  id!: number;
-
-  @Field()
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @Field()
-  @UpdateDateColumn()
-  updatedAt: Date;
+  id!: string;
 
   @Field()
   @Column({ unique: true })
@@ -32,9 +27,21 @@ export class User extends BaseEntity {
   email!: string;
 
   @Field()
-  @Column({default: 'user'})
+  @Column({ default: "user" })
   displayName!: string;
 
   @Column()
   password!: string;
+
+  @OneToMany(() => Friend, (friend) => friend.user || friend.friend)
+  @JoinTable()
+  friends!: User[];
+
+  @Field()
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Field()
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

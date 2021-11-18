@@ -14,6 +14,7 @@ import redis from "./redisClient";
 import { MyContext } from "./types";
 import path from "path";
 import { User } from "./entities/User";
+import { Friend } from "./entities/Friend";
 
 const main = async () => {
   const conn = await createConnection({
@@ -24,7 +25,7 @@ const main = async () => {
     logging: true,
     // synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User],
+    entities: [User, Friend],
   });
   // await conn.runMigrations();
 
@@ -51,8 +52,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 364 * 10, // 10 years
         httpOnly: true,
-        sameSite: "lax", // none is needed for apollographql sandbox
-        secure: __prod__, // cookie only works in https
+        sameSite: "none", // none is needed for apollographql sandbox
+        secure: !__prod__, // cookie only works in https
       },
       saveUninitialized: false,
       secret: "def make this a .env thing later",
