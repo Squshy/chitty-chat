@@ -7,6 +7,7 @@ export default function Home() {
       <p>TO DO</p>
       <ul className="list-disc">
         <li className="">Confirm logout modal</li>
+        <li className="">Add S3 image hosting</li>
       </ul>
     </div>
   );

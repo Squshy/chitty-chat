@@ -1,0 +1,11 @@
+query Friends {
+  friends {
+    user {
+      id
+      username
+      displayName
+    }
+    confirmed
+    initiator
+  }
+}

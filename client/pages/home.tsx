@@ -1,4 +1,5 @@
 import { BaseLogoutButton } from "../components/buttons/BaseLogoutButton";
+import { FriendsList } from "../components/friends/FriendsList";
 import { SideBar } from "../components/sideBar/SideBar";
 import { User } from "../generated/graphql";
 import { useAuthPage } from "../utils/hooks/useAuthPage";
@@ -11,9 +12,9 @@ export default function Home() {
   } else {
     return (
       <div className="flex h-screen">
-        <SideBar user={data!.me as User}/>
-        <div className="shadow-inner p-8">
-          hey
+        <SideBar user={data!.me as User} />
+        <div className="flex-grow bg-mid">
+          <FriendsList />
         </div>
       </div>
     );

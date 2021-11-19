@@ -22,13 +22,26 @@ export type FieldError = {
   message: Scalars['String'];
 };
 
+export type FriendResponse = {
+  __typename?: 'FriendResponse';
+  confirmed: Scalars['Boolean'];
+  initiator: Scalars['String'];
+  user: User;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
+  addFriend: Scalars['Boolean'];
   changePassword: UserResponse;
   forgotPassword: Scalars['Boolean'];
   login: UserResponse;
   logout: Scalars['Boolean'];
   register: UserResponse;
+};
+
+
+export type MutationAddFriendArgs = {
+  userToAdd: Scalars['String'];
 };
 
 
@@ -55,6 +68,7 @@ export type MutationRegisterArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  friends: Array<FriendResponse>;
   me?: Maybe<User>;
   searchForUser?: Maybe<Array<User>>;
 };
@@ -126,6 +140,11 @@ export type RegisterMutationVariables = Exact<{
 
 
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined } };
+
+export type FriendsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FriendsQuery = { __typename?: 'Query', friends: Array<{ __typename?: 'FriendResponse', confirmed: boolean, initiator: string, user: { __typename?: 'User', id: string, username: string, displayName: string } }> };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -319,6 +338,46 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
+export const FriendsDocument = gql`
+    query Friends {
+  friends {
+    user {
+      id
+      username
+      displayName
+    }
+    confirmed
+    initiator
+  }
+}
+    `;
+
+/**
+ * __useFriendsQuery__
+ *
+ * To run a query within a React component, call `useFriendsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFriendsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFriendsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useFriendsQuery(baseOptions?: Apollo.QueryHookOptions<FriendsQuery, FriendsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<FriendsQuery, FriendsQueryVariables>(FriendsDocument, options);
+      }
+export function useFriendsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FriendsQuery, FriendsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<FriendsQuery, FriendsQueryVariables>(FriendsDocument, options);
+        }
+export type FriendsQueryHookResult = ReturnType<typeof useFriendsQuery>;
+export type FriendsLazyQueryHookResult = ReturnType<typeof useFriendsLazyQuery>;
+export type FriendsQueryResult = Apollo.QueryResult<FriendsQuery, FriendsQueryVariables>;
 export const MeDocument = gql`
     query Me {
   me {

@@ -7,7 +7,12 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import { User } from "../entities/User";
-import { MyContext, UsernamePasswordInput, UserResponse } from "../types";
+import {
+  FriendResponse,
+  MyContext,
+  UsernamePasswordInput,
+  UserResponse,
+} from "../types";
 import { hash as hashPassword, verify } from "argon2";
 import { validateRegister } from "../util/validateUsernamePasswordInput";
 import { handleRegisterErrors } from "../util/handleRegisterErrors";
@@ -145,12 +150,13 @@ export class UserResolver {
     return true;
   }
 
-  @Query(() => [User])
+  @Query(() => [FriendResponse])
   @UseMiddleware(isAuth)
-  async getFriends(@Ctx() { req }: MyContext): Promise<User[]> {
-    const friends: User[] = await getConnection().query(
-      ` SELECT * 
+  async friends(@Ctx() { req }: MyContext): Promise<FriendResponse> {
+    const friends = await getConnection().query(
+      ` SELECT row_to_json(U) AS "user", f.confirmed, f.user_id as "initiator"
         FROM "user" U
+        LEFT JOIN friend f ON u.id = f.user_id OR u.id = f.friend_id
         WHERE U.id <> $1
           AND EXISTS(
             SELECT 1
@@ -160,6 +166,7 @@ export class UserResolver {
             );`,
       [req.session.userId]
     );
+    console.log(friends);
     return friends;
   }
 

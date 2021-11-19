@@ -46,3 +46,13 @@ export class UserResponse {
   @Field(() => User, { nullable: true })
   user?: User;
 }
+
+@ObjectType()
+export class FriendResponse {
+  @Field(() => User)
+  user!: User;
+  @Field(() => Boolean)
+  confirmed!: boolean;
+  @Field(() => String)
+  initiator!: string;
+}
