@@ -7,18 +7,23 @@ type FormLabelInputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
 };
 
-export const FormLabelInput: React.FC<FormLabelInputProps> = ({label, ...props}) => {
+export const FormLabelInput: React.FC<FormLabelInputProps> = ({
+  label,
+  ...props
+}) => {
   const [field, { error }] = useField(props);
   return (
-    <div>
+    <div className="m-4 w-full">
       <label
-        className="block font-semibold text-md"
+        className="block font-semibold text-md text-purple-500"
         htmlFor={field.name}
       >
         {label}
       </label>
       <input
-        className={`appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight focus:outline-none focus:ring  ${error && 'border-[#DA0037] border'}`}
+        className={`appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight focus:outline-none focus:ring bg-[#6a6a6a] ${
+          error && "border-[#f7022a] border"
+        }`}
         {...field}
         {...props}
         id={field.name}
