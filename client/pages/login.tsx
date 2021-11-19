@@ -6,6 +6,8 @@ import { MeDocument, MeQuery, useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/dist/client/router";
 import Link from "next/link";
+import { FormWrapper } from "../components/form/FormWrapper";
+import { SubmitButton } from "../components/form/SubmitButton";
 
 interface LoginProps {}
 
@@ -37,34 +39,30 @@ const Login: React.FC<LoginProps> = ({}) => {
           }
         }}
       >
-        <div className="w-full flex min-h-screen justify-center">
-          <Form className="w-md flex items-center bg-[#1e1e1e] p-12 align-center self-center rounded-md shadow-md">
-            <div className="w-full -m-4">
-              <FormLabelInput
-                label="Username/Email"
-                placeholder="Username/Email"
-                name="usernameOrEmail"
-              />
-              <FormLabelInput
-                label="Password"
-                placeholder="Password"
-                name="password"
-                type="password"
-              />
-              <button
-                type="submit"
-                className="m-4 w-full shadow-sm bg-[#383838] py-2 px-4 rounded-md text-purple-300"
-              >
-                Login
-              </button>
-              <div className="w-full flex justify-end mx-2">
-                <Link href="/forgot-password">
-                  <a className="text-xs text-purple-500">Forgot password?</a>
-                </Link>
-              </div>
-            </div>
-          </Form>
-        </div>
+        <FormWrapper title="Login" subtitle="Welcome back!">
+          <FormLabelInput
+            label="Username or Email"
+            placeholder="Username/Email"
+            name="usernameOrEmail"
+          />
+          <FormLabelInput
+            label="Password"
+            placeholder="Password"
+            name="password"
+            type="password"
+          >
+            <Link href="/forgot-password">
+              <a className="text-xs text-purple-500">Forgot password?</a>
+            </Link>
+          </FormLabelInput>
+          <SubmitButton text="Login" />
+          <p className="mx-4 my-1 text-xs text-[#666666]">
+            Don&apos;t have an account?{" "}
+            <Link href="/register">
+              <a className="text-purple-500">Register</a>
+            </Link>
+          </p>
+        </FormWrapper>
       </Formik>
     </Wrapper>
   );

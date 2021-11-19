@@ -5,10 +5,17 @@ import { Wrapper } from "../components/form/Wrapper";
 import { MeDocument, MeQuery, useRegisterMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/dist/client/router";
+import { FormWrapper } from "../components/form/FormWrapper";
+import { SubmitButton } from "../components/form/SubmitButton";
+import Link from "next/link";
 
-interface RegisterProps {}
+export interface RegisterValues {
+  email: string;
+  username: string;
+  password: string;
+}
 
-const Register: React.FC<RegisterProps> = ({}) => {
+const Register: React.FC = ({}) => {
   const router = useRouter();
   const [register, { data, loading, error }] = useRegisterMutation();
 
@@ -17,7 +24,6 @@ const Register: React.FC<RegisterProps> = ({}) => {
       <Formik
         initialValues={{ email: "", username: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
-          console.log(values);
           const response = await register({
             variables: { options: values },
             update: (cache, { data }) => {
@@ -37,30 +43,32 @@ const Register: React.FC<RegisterProps> = ({}) => {
           }
         }}
       >
-        <div className="w-full flex min-h-screen bg-gray-100 justify-center">
-          <Form className="w-md flex items-center bg-white p-12 align-center self-center rounded-md shadow-md">
-            <div className="space-y-4">
-              <FormLabelInput
-                label="Username"
-                placeholder="Username"
-                name="username"
-              />
-              <FormLabelInput
-                label="Email"
-                placeholder="Email"
-                name="email"
-                type="email"
-              />
-              <FormLabelInput
-                label="Password"
-                placeholder="Password"
-                name="password"
-                type="password"
-              />
-              <button type="submit">Register</button>
-            </div>
-          </Form>
-        </div>
+        <FormWrapper title="Register" subtitle="Yeehaw">
+          <FormLabelInput
+            label="Username"
+            placeholder="Username"
+            name="username"
+          />
+          <FormLabelInput
+            label="Email"
+            placeholder="Email"
+            name="email"
+            type="email"
+          />
+          <FormLabelInput
+            label="Password"
+            placeholder="Password"
+            name="password"
+            type="password"
+          />
+          <SubmitButton text="Register" />
+          <p className="mx-4 my-1 text-xs text-[#666666]">
+            Already have an account?{" "}
+            <Link href="/login">
+              <a className="text-purple-500">Login</a>
+            </Link>
+          </p>
+        </FormWrapper>
       </Formik>
     </Wrapper>
   );
