@@ -8,6 +8,7 @@ import { useRouter } from "next/dist/client/router";
 import Link from "next/link";
 import { FormWrapper } from "../components/form/FormWrapper";
 import { SubmitButton } from "../components/form/SubmitButton";
+import { RedirectText } from "../components/form/RedirectText";
 
 interface LoginProps {}
 
@@ -56,12 +57,11 @@ const Login: React.FC<LoginProps> = ({}) => {
             </Link>
           </FormLabelInput>
           <SubmitButton text="Login" />
-          <p className="mx-4 my-1 text-xs text-[#666666]">
-            Don&apos;t have an account?{" "}
-            <Link href="/register">
-              <a className="text-purple-500">Register</a>
-            </Link>
-          </p>
+          <RedirectText
+            text="Don't have an account?"
+            href="/register"
+            to="Register"
+          />
         </FormWrapper>
       </Formik>
     </Wrapper>

@@ -1,4 +1,5 @@
 import { useApolloClient } from "@apollo/client";
+import { useRouter } from "next/dist/client/router";
 import React, { ButtonHTMLAttributes } from "react";
 import { useLogoutMutation } from "../../generated/graphql";
 
@@ -13,11 +14,13 @@ export const BaseLogoutButton: React.FC<BaseLogoutButtonProps> = ({
 }) => {
   const [logout] = useLogoutMutation();
   const apolloClient = useApolloClient();
+  const router = useRouter();
   return (
     <button
-      onClick={() => {
-        logout();
-        apolloClient.resetStore();
+      onClick={async () => {
+        await router.push("/login");
+        await logout();
+        await apolloClient.resetStore();
       }}
       {...props}
     >

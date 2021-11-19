@@ -8,6 +8,7 @@ import { useRouter } from "next/dist/client/router";
 import { FormWrapper } from "../components/form/FormWrapper";
 import { SubmitButton } from "../components/form/SubmitButton";
 import Link from "next/link";
+import { RedirectText } from "../components/form/RedirectText";
 
 export interface RegisterValues {
   email: string;
@@ -62,12 +63,11 @@ const Register: React.FC = ({}) => {
             type="password"
           />
           <SubmitButton text="Register" />
-          <p className="mx-4 my-1 text-xs text-[#666666]">
-            Already have an account?{" "}
-            <Link href="/login">
-              <a className="text-purple-500">Login</a>
-            </Link>
-          </p>
+          <RedirectText
+            text="Already have an account?"
+            href="/login"
+            to="Login"
+          />
         </FormWrapper>
       </Formik>
     </Wrapper>
