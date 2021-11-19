@@ -5,7 +5,11 @@ import React, { useState } from "react";
 import { FormErrorMessage } from "../../components/form/FormErrorMessage";
 import { FormLabelInput } from "../../components/form/FormLabelInput";
 import { Wrapper } from "../../components/form/Wrapper";
-import { useChangePasswordMutation } from "../../generated/graphql";
+import {
+  MeDocument,
+  MeQuery,
+  useChangePasswordMutation,
+} from "../../generated/graphql";
 import { toErrorMap } from "../../utils/toErrorMap";
 import Link from "next/link";
 
@@ -21,6 +25,15 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
             setTokenError("");
             const response = await changePassword({
               variables: { newPassword, token },
+              update: (cache, { data }) => {
+                cache.writeQuery<MeQuery>({
+                  query: MeDocument,
+                  data: {
+                    __typename: "Query",
+                    me: data?.changePassword.user,
+                  },
+                });
+              },
             });
             if (response.data?.changePassword.errors) {
               const errorMap = toErrorMap(response.data.changePassword.errors);
