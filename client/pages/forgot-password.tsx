@@ -3,7 +3,7 @@ import router from "next/dist/client/router";
 import Link from "next/link";
 import React, { useState } from "react";
 import { FormLabelInput } from "../components/form/FormLabelInput";
-import { Wrapper } from "../components/form/Wrapper";
+import { Wrapper } from "../components/Wrapper";
 import { useForgotPasswordMutation } from "../generated/graphql";
 
 const ForgotPassword: React.FC<{}> = ({}) => {

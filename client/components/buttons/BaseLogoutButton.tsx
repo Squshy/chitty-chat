@@ -8,6 +8,7 @@ type BaseLogoutButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export const BaseLogoutButton: React.FC<BaseLogoutButtonProps> = ({
   text,
+  children,
   ...props
 }) => {
   const [logout] = useLogoutMutation();
@@ -20,7 +21,8 @@ export const BaseLogoutButton: React.FC<BaseLogoutButtonProps> = ({
       }}
       {...props}
     >
-      {text ? text : "Logout"}
+      {text && text}
+      {children}
     </button>
   );
 };

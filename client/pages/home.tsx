@@ -1,23 +1,20 @@
-import { useApolloClient } from "@apollo/client";
 import { BaseLogoutButton } from "../components/buttons/BaseLogoutButton";
 import { SideBar } from "../components/sideBar/SideBar";
-import { useLogoutMutation, useMeQuery } from "../generated/graphql";
+import { User } from "../generated/graphql";
+import { useAuthPage } from "../utils/hooks/useAuthPage";
 
 export default function Home() {
-  const { data, loading } = useMeQuery();
-  const [logout] = useLogoutMutation();
-  const apolloClient = useApolloClient();
+  const { data, loading, auth } = useAuthPage();
 
-  if (loading) {
-    return <div className="w-full h-screen bg-gray-100"></div>;
+  if (loading || !auth) {
+    return <div className="w-full h-screen"></div>;
   } else {
     return (
       <div className="flex h-screen">
-        <SideBar />
-        {JSON.stringify(data)}
-        {data?.me && (
-          <BaseLogoutButton className="p-4 bg-blue-500 rounded h-16 w-auto" />
-        )}
+        <SideBar user={data!.me as User}/>
+        <div className="shadow-inner p-8">
+          hey
+        </div>
       </div>
     );
   }

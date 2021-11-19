@@ -10,7 +10,17 @@ export const Header: React.FC<HeaderProps> = ({}) => {
 
   const Button = () => {
     if (data?.me) {
-      return <BaseLogoutButton />;
+      return (
+        <div className="flex">
+          <Link href="/home">
+            <a className="bg-purple-700 rounded-md p-2 font-semibold">Launch</a>
+          </Link>
+          <BaseLogoutButton
+            className="bg-purple-700 rounded-md p-2 font-semibold ml-4"
+            text="Logout"
+          />
+        </div>
+      );
     } else {
       return (
         <Link href="/login">
