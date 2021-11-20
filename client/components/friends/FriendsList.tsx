@@ -45,8 +45,8 @@ export const FriendsList: React.FC<FriendsListProps> = ({}) => {
                 onClick={setFriendSort}
               />
             ))}
-            <button className="group transition duration 150 ease-out mx-2 p-2 self-center bg-back hover:bg-opacity-75 rounded-md">
-              <UserAddIcon className="transform transition duration-150 ease-out w-6 h-6 text-purple-500 group-hover:scale-105 group-hover:text-purple-400" />
+            <button className="group transition duration 150 ease-out mx-2 p-2 self-center hover:bg-opacity-75 rounded-md">
+              <UserAddIcon className="transform transition duration-150 ease-out w-6 h-6 text-green-400 group-hover:scale-105 group-hover:text-green-600" />
             </button>
           </div>
         </div>
