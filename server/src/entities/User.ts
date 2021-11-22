@@ -30,6 +30,10 @@ export class User extends BaseEntity {
   @Column({ default: "user" })
   displayName!: string;
 
+  @Field()
+  @Column({default: 'public'})
+  visibility!: 'public' | 'private';
+
   @Column()
   password!: string;
 

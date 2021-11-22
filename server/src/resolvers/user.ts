@@ -127,7 +127,10 @@ export class UserResolver {
     const results = await getConnection()
       .createQueryBuilder()
       .select(`*, username <-> '${username}' AS dist`)
-      .where("id != :id", { id: req.session.userId })
+      .where("id != :id AND visibility = :visibility", {
+        id: req.session.userId,
+        visibility: "public",
+      })
       .from(User, "user")
       .orderBy(`dist`)
       .limit(10)
