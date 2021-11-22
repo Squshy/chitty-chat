@@ -1,11 +1,13 @@
 query Friends {
   friends {
-    user {
-      id
-      username
-      displayName
+    friends {
+      ...Friend
     }
-    confirmed
-    initiator
+    pending {
+      ...Friend
+    }
+    requests {
+      ...Friend
+    }
   }
 }

@@ -22,6 +22,13 @@ export type FieldError = {
   message: Scalars['String'];
 };
 
+export type FriendList = {
+  __typename?: 'FriendList';
+  friends: Array<FriendResponse>;
+  pending: Array<FriendResponse>;
+  requests: Array<FriendResponse>;
+};
+
 export type FriendResponse = {
   __typename?: 'FriendResponse';
   confirmed: Scalars['Boolean'];
@@ -68,7 +75,7 @@ export type MutationRegisterArgs = {
 
 export type Query = {
   __typename?: 'Query';
-  friends: Array<FriendResponse>;
+  friends: FriendList;
   me?: Maybe<User>;
   searchForUser?: Maybe<Array<User>>;
 };
@@ -99,6 +106,8 @@ export type UsernamePasswordInput = {
   password: Scalars['String'];
   username: Scalars['String'];
 };
+
+export type FriendFragment = { __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } };
 
 export type UserFragment = { __typename?: 'User', id: string, username: string, email: string, displayName: string };
 
@@ -144,13 +153,21 @@ export type RegisterMutation = { __typename?: 'Mutation', register: { __typename
 export type FriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type FriendsQuery = { __typename?: 'Query', friends: Array<{ __typename?: 'FriendResponse', confirmed: boolean, initiator: string, user: { __typename?: 'User', id: string, username: string, displayName: string } }> };
+export type FriendsQuery = { __typename?: 'Query', friends: { __typename?: 'FriendList', friends: Array<{ __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } }>, pending: Array<{ __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } }>, requests: Array<{ __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined };
 
+export const FriendFragmentDoc = gql`
+    fragment Friend on FriendResponse {
+  user {
+    username
+    displayName
+  }
+}
+    `;
 export const UserErrorFragmentDoc = gql`
     fragment UserError on FieldError {
   field
@@ -341,16 +358,18 @@ export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutatio
 export const FriendsDocument = gql`
     query Friends {
   friends {
-    user {
-      id
-      username
-      displayName
+    friends {
+      ...Friend
     }
-    confirmed
-    initiator
+    pending {
+      ...Friend
+    }
+    requests {
+      ...Friend
+    }
   }
 }
-    `;
+    ${FriendFragmentDoc}`;
 
 /**
  * __useFriendsQuery__
