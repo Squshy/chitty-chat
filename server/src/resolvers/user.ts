@@ -8,6 +8,7 @@ import {
 } from "type-graphql";
 import { User } from "../entities/User";
 import {
+  FriendList,
   FriendResponse,
   MyContext,
   UsernamePasswordInput,
@@ -150,9 +151,14 @@ export class UserResolver {
     return true;
   }
 
-  @Query(() => [FriendResponse])
+  @Query(() => FriendList)
   @UseMiddleware(isAuth)
-  async friends(@Ctx() { req }: MyContext): Promise<FriendResponse> {
+  async friends(@Ctx() { req }: MyContext): Promise<FriendList> {
+    const friendList = {
+      friends: <FriendResponse[]>[],
+      pending: <FriendResponse[]>[],
+      requests: <FriendResponse[]>[],
+    };
     const friends = await getConnection().query(
       ` SELECT row_to_json(U) AS "user", f.confirmed, f.user_id as "initiator"
         FROM "user" U
@@ -166,8 +172,18 @@ export class UserResolver {
             );`,
       [req.session.userId]
     );
-    console.log(friends);
-    return friends;
+
+    friends.forEach((friend: FriendResponse) => {
+      if (friend.confirmed) {
+        friendList.friends.push(friend);
+      } else {
+        if (friend.initiator === req.session.userId) {
+          friendList.pending.push(friend);
+        } else friendList.requests.push(friend);
+      }
+    });
+
+    return friendList;
   }
 
   @Mutation(() => Boolean)
