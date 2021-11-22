@@ -8,7 +8,6 @@ import {
 } from "type-graphql";
 import { User } from "../entities/User";
 import {
-  FriendList,
   FriendResponse,
   MyContext,
   UsernamePasswordInput,
@@ -158,19 +157,14 @@ export class UserResolver {
     return true;
   }
 
-  @Query(() => FriendList)
+  @Query(() => [User])
   @UseMiddleware(isAuth)
-  async friends(@Ctx() { req }: MyContext): Promise<FriendList> {
-    const friendList = {
-      friends: <FriendResponse[]>[],
-      pending: <FriendResponse[]>[],
-      requests: <FriendResponse[]>[],
-    };
-    const friends = await getConnection().query(
-      ` SELECT row_to_json(U) AS "user", f.confirmed, f.user_id as "initiator"
+  async friends(@Ctx() { req }: MyContext): Promise<User[]> {
+    const friends: User[] = await getConnection().query(
+      ` SELECT *
         FROM "user" U
-        LEFT JOIN friend f ON u.id = f.user_id OR u.id = f.friend_id
-        WHERE U.id <> $1
+        LEFT JOIN friend f ON U.id = f.user_id OR U.id = f.friend_id
+        WHERE U.id <> $1 AND f.confirmed = TRUE 
           AND EXISTS(
             SELECT 1
             FROM friend F
@@ -179,18 +173,33 @@ export class UserResolver {
             );`,
       [req.session.userId]
     );
+    return friends;
+  }
 
-    friends.forEach((friend: FriendResponse) => {
-      if (friend.confirmed) {
-        friendList.friends.push(friend);
-      } else {
-        if (friend.initiator === req.session.userId) {
-          friendList.pending.push(friend);
-        } else friendList.requests.push(friend);
-      }
-    });
+  @Query(() => [User])
+  @UseMiddleware(isAuth)
+  async pendingFriends(@Ctx() { req }: MyContext): Promise<User[]> {
+    const friends: User[] = await getConnection().query(
+      ` SELECT *
+        FROM "user" U
+        LEFT JOIN friend f ON U.id = f.friend_id
+        WHERE U.id <> $1 AND f.confirmed = FALSE`,
+      [req.session.userId]
+    );
+    return friends;
+  }
 
-    return friendList;
+  @Query(() => [User])
+  @UseMiddleware(isAuth)
+  async friendRequests(@Ctx() { req }: MyContext): Promise<User[]> {
+    const friends: User[] = await getConnection().query(
+      ` SELECT *
+        FROM "user" U
+        LEFT JOIN friend f ON U.id = f.user_id
+        WHERE U.id <> $1 AND f.confirmed = FALSE`,
+      [req.session.userId]
+    );
+    return friends;
   }
 
   @Mutation(() => Boolean)

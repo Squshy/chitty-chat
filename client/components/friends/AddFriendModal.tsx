@@ -83,8 +83,8 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                         key={u.username}
                         displayName={u.displayName}
                         username={u.username}
-                        addFriend={() =>
-                          addFriend({ variables: { username: u.username } })
+                        addFriend={async () =>
+                          await addFriend({ variables: { username: u.username }})
                         }
                       />
                     );

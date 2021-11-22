@@ -56,15 +56,3 @@ export class FriendResponse {
   @Field(() => String)
   initiator!: string;
 }
-
-@ObjectType()
-export class FriendList {
-  @Field(() => [FriendResponse])
-  friends!: FriendResponse[];
-
-  @Field(() => [FriendResponse])
-  pending!: FriendResponse[];
-
-  @Field(() => [FriendResponse])
-  requests!: FriendResponse[];
-}
