@@ -120,10 +120,14 @@ export class UserResolver {
 
   @Query(() => [User], { nullable: true })
   @UseMiddleware(isAuth)
-  async searchForUser(@Arg("username") username: String) {
+  async searchForUser(
+    @Arg("username") username: String,
+    @Ctx() { req }: MyContext
+  ) {
     const results = await getConnection()
       .createQueryBuilder()
       .select(`*, username <-> '${username}' AS dist`)
+      .where("id != :id", { id: req.session.userId })
       .from(User, "user")
       .orderBy(`dist`)
       .limit(10)
@@ -134,12 +138,12 @@ export class UserResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async addFriend(
-    @Arg("userToAdd") userToAdd: string,
+    @Arg("username") username: string,
     @Ctx() { req }: MyContext
   ) {
     const me = await User.findOne(req.session.userId);
     if (!me) return false;
-    const friendToAdd = await User.findOne({ username: userToAdd });
+    const friendToAdd = await User.findOne({ username: username });
     if (!friendToAdd) return false;
 
     await Friend.create({

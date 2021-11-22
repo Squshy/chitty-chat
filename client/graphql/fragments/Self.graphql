@@ -1,0 +1,6 @@
+fragment Self on User {
+  id
+  username
+  email
+  displayName
+}

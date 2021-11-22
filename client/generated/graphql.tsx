@@ -48,7 +48,7 @@ export type Mutation = {
 
 
 export type MutationAddFriendArgs = {
-  userToAdd: Scalars['String'];
+  username: Scalars['String'];
 };
 
 
@@ -109,11 +109,20 @@ export type UsernamePasswordInput = {
 
 export type FriendFragment = { __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } };
 
+export type SelfFragment = { __typename?: 'User', id: string, username: string, email: string, displayName: string };
+
 export type UserFragment = { __typename?: 'User', id: string, username: string, email: string, displayName: string };
 
 export type UserErrorFragment = { __typename?: 'FieldError', field: string, message: string };
 
 export type UserResponseFragment = { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined };
+
+export type AddFriendMutationVariables = Exact<{
+  username: Scalars['String'];
+}>;
+
+
+export type AddFriendMutation = { __typename?: 'Mutation', addFriend: boolean };
 
 export type ChangePasswordMutationVariables = Exact<{
   newPassword: Scalars['String'];
@@ -160,12 +169,27 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined };
 
+export type SearchForUserQueryVariables = Exact<{
+  username: Scalars['String'];
+}>;
+
+
+export type SearchForUserQuery = { __typename?: 'Query', searchForUser?: Array<{ __typename?: 'User', username: string, displayName: string }> | null | undefined };
+
 export const FriendFragmentDoc = gql`
     fragment Friend on FriendResponse {
   user {
     username
     displayName
   }
+}
+    `;
+export const SelfFragmentDoc = gql`
+    fragment Self on User {
+  id
+  username
+  email
+  displayName
 }
     `;
 export const UserErrorFragmentDoc = gql`
@@ -193,6 +217,37 @@ export const UserResponseFragmentDoc = gql`
 }
     ${UserErrorFragmentDoc}
 ${UserFragmentDoc}`;
+export const AddFriendDocument = gql`
+    mutation AddFriend($username: String!) {
+  addFriend(username: $username)
+}
+    `;
+export type AddFriendMutationFn = Apollo.MutationFunction<AddFriendMutation, AddFriendMutationVariables>;
+
+/**
+ * __useAddFriendMutation__
+ *
+ * To run a mutation, you first call `useAddFriendMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddFriendMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addFriendMutation, { data, loading, error }] = useAddFriendMutation({
+ *   variables: {
+ *      username: // value for 'username'
+ *   },
+ * });
+ */
+export function useAddFriendMutation(baseOptions?: Apollo.MutationHookOptions<AddFriendMutation, AddFriendMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddFriendMutation, AddFriendMutationVariables>(AddFriendDocument, options);
+      }
+export type AddFriendMutationHookResult = ReturnType<typeof useAddFriendMutation>;
+export type AddFriendMutationResult = Apollo.MutationResult<AddFriendMutation>;
+export type AddFriendMutationOptions = Apollo.BaseMutationOptions<AddFriendMutation, AddFriendMutationVariables>;
 export const ChangePasswordDocument = gql`
     mutation ChangePassword($newPassword: String!, $token: String!) {
   changePassword(newPassword: $newPassword, token: $token) {
@@ -431,3 +486,39 @@ export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery
 export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const SearchForUserDocument = gql`
+    query SearchForUser($username: String!) {
+  searchForUser(username: $username) {
+    username
+    displayName
+  }
+}
+    `;
+
+/**
+ * __useSearchForUserQuery__
+ *
+ * To run a query within a React component, call `useSearchForUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useSearchForUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSearchForUserQuery({
+ *   variables: {
+ *      username: // value for 'username'
+ *   },
+ * });
+ */
+export function useSearchForUserQuery(baseOptions: Apollo.QueryHookOptions<SearchForUserQuery, SearchForUserQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<SearchForUserQuery, SearchForUserQueryVariables>(SearchForUserDocument, options);
+      }
+export function useSearchForUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<SearchForUserQuery, SearchForUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<SearchForUserQuery, SearchForUserQueryVariables>(SearchForUserDocument, options);
+        }
+export type SearchForUserQueryHookResult = ReturnType<typeof useSearchForUserQuery>;
+export type SearchForUserLazyQueryHookResult = ReturnType<typeof useSearchForUserLazyQuery>;
+export type SearchForUserQueryResult = Apollo.QueryResult<SearchForUserQuery, SearchForUserQueryVariables>;
