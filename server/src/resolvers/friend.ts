@@ -1,11 +1,18 @@
-import { Arg, Ctx, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import { getConnection, getCustomRepository } from "typeorm";
 import { Friend } from "../entities/Friend";
 import { User } from "../entities/User";
 import { isAuth } from "../middleware/isAuth";
 import { UserRepository } from "../repositories/User";
 import { MyContext } from "../types";
-import { FriendResponse } from "./responses/userResponses";
+import { FriendResponse } from "./responses/friendResponses";
 
 @Resolver(Friend)
 export class FriendResolver {
@@ -15,18 +22,31 @@ export class FriendResolver {
     @Arg("username") username: String,
     @Ctx() { req }: MyContext
   ) {
-    const results = await getConnection()
-      .createQueryBuilder()
-      .select(`*, username <-> '${username}' AS dist`)
-      .where("id != :id AND visibility = :visibility", {
-        id: req.session.userId,
-        visibility: "public",
-      })
-      .from(User, "user")
-      .orderBy(`dist`)
-      .limit(10)
-      .getRawMany();
-    return results;
+    // const users = await getConnection()
+    //   .createQueryBuilder()
+    //   .select(`*, username <-> '${username}' AS dist`)
+    //   .where("id <> :id AND visibility = public", {
+    //     id: req.session.userId,
+    //   })
+    //   .from(User, "user")
+    //   .orderBy("dist")
+    //   .limit(10)
+    //   .getRawMany();
+
+    const users = await getConnection().query(
+      `
+      SELECT *, username <-> $2 AS dist
+      FROM "user" U
+      LEFT JOIN friend f 
+        ON f.user_id = U.id AND f.friend_id = $1 
+        OR f.user_id = $1 AND f.friend_id = U.id
+      WHERE U.id <> $1 AND f.user_id IS NULL or f.friend_id IS NULL
+      ORDER BY dist
+      LIMIT 10
+    `,
+      [req.session.userId, username]
+    );
+    return users;
   }
 
   @Mutation(() => FriendResponse)
@@ -35,32 +55,60 @@ export class FriendResolver {
     @Arg("username") username: string,
     @Ctx() { req }: MyContext
   ): Promise<FriendResponse> {
-    const friendToAdd = await User.findOne({ username: username });
-    if (!friendToAdd) return { error: "That user does not exists" };
+    const friend = await User.findOne({ username: username });
+    if (!friend) return { error: "That user does not exists" };
 
     const exists = await Friend.findOne({
       where: [
-        { userId: req.session.userId, friendId: friendToAdd.id },
-        { userId: friendToAdd.id, friendId: req.session.userId },
+        { userId: req.session.userId, friendId: friend.id },
+        { userId: friend.id, friendId: req.session.userId },
       ],
     });
     if (exists)
       return {
-        error: "This friendship already exists, or is currently pending.",
+        error:
+          "You are already friends with this user, or a request has already been sent.",
       };
 
-    await Friend.create({
-      confirmed: false,
-      friendId: friendToAdd.id,
-      userId: req.session.userId,
-    }).save();
+    try {
+      await Friend.create({
+        confirmed: false,
+        friendId: friend.id,
+        userId: req.session.userId,
+      }).save();
+    } catch (error) {
+      return { error };
+    }
+    return { friend };
+  }
 
-    const userRepository = getCustomRepository(UserRepository);
-    const friends = await userRepository.getPendingFriendRequests(
-      req.session.userId as string
-    );
+  @Mutation(() => FriendResponse)
+  @UseMiddleware(isAuth)
+  async confirmFriend(
+    @Arg("username") username: string,
+    @Ctx() { req }: MyContext
+  ): Promise<FriendResponse> {
+    const friend = await User.findOne({ username: username });
+    if (!friend) return { error: "That user does not exists" };
 
-    return { friends };
+    try {
+      await getConnection()
+        .createQueryBuilder()
+        .update(Friend)
+        .set({ confirmed: true })
+        .where(
+          "user_id = :me AND friend_id = :friend OR user_id = :friend AND friend_id = :me",
+          {
+            me: req.session.userId,
+            friend: friend.id,
+          }
+        )
+        .execute();
+    } catch (error) {
+      return { error };
+    }
+
+    return { friend };
   }
 
   @Query(() => [User])

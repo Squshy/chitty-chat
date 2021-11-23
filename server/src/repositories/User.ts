@@ -7,7 +7,7 @@ export class UserRepository extends Repository<User> {
     return getConnection().query(
       ` SELECT *
         FROM "user" U
-        LEFT JOIN friend f ON U.id = f.friend_id
+        LEFT JOIN friend f ON U.id = f.friend_id AND f.user_id = $1
         WHERE U.id <> $1 AND f.confirmed = FALSE`,
       [userId]
     );
@@ -18,13 +18,7 @@ export class UserRepository extends Repository<User> {
       ` SELECT *
         FROM "user" U
         LEFT JOIN friend f ON U.id = f.user_id OR U.id = f.friend_id
-        WHERE U.id <> $1 AND f.confirmed = TRUE 
-          AND EXISTS(
-            SELECT 1
-            FROM friend F
-            WHERE (F."user_id" = $1 AND F."friend_id" = U.id )
-            OR (F."user_id" = $1 AND F."friend_id" = U.id )
-            );`,
+        WHERE U.id <> $1 AND f.confirmed = TRUE`,
       [userId]
     );
   }
@@ -32,7 +26,7 @@ export class UserRepository extends Repository<User> {
     return getConnection().query(
       ` SELECT *
         FROM "user" U
-        LEFT JOIN friend f ON U.id = f.user_id
+        LEFT JOIN friend f ON U.id = f.user_id AND f.friend_id = $1
         WHERE U.id <> $1 AND f.confirmed = FALSE`,
       [userId]
     );
