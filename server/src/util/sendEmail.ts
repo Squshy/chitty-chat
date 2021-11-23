@@ -2,9 +2,7 @@ import nodemailer from "nodemailer";
 import { __prod__ } from "../constants";
 
 export const sendEmail = async (to: string, subject: string, text: string) => {
-  __prod__
-    ? await prodMail(to, subject, text)
-    : await devMail(to, subject, text);
+  return __prod__ ? prodMail(to, subject, text) : devMail(to, subject, text);
 };
 
 const devMail = async (to: string, subject: string, text: string) => {

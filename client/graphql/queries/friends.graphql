@@ -1,13 +1,5 @@
 query Friends {
   friends {
-    friends {
-      ...Friend
-    }
-    pending {
-      ...Friend
-    }
-    requests {
-      ...Friend
-    }
+    ...Friend
   }
 }

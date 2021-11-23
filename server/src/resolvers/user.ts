@@ -7,12 +7,7 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import { User } from "../entities/User";
-import {
-  FriendResponse,
-  MyContext,
-  UsernamePasswordInput,
-  UserResponse,
-} from "../types";
+import { MyContext } from "../types";
 import { hash as hashPassword, verify } from "argon2";
 import { validateRegister } from "../util/validateUsernamePasswordInput";
 import { handleRegisterErrors } from "../util/handleRegisterErrors";
@@ -29,6 +24,11 @@ import { validatePassword } from "../util/validatePassword";
 import { isAuth } from "../middleware/isAuth";
 import { Friend } from "../entities/Friend";
 import { UserRepository } from "../repositories/User";
+import {
+  UserResponse,
+  UsernamePasswordInput,
+  FriendResponse,
+} from "./responses/userResponses";
 
 @Resolver(User)
 export class UserResolver {
@@ -138,24 +138,38 @@ export class UserResolver {
     return results;
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => FriendResponse)
   @UseMiddleware(isAuth)
   async addFriend(
     @Arg("username") username: string,
     @Ctx() { req }: MyContext
-  ) {
-    const me = await User.findOne(req.session.userId);
-    if (!me) return false;
+  ): Promise<FriendResponse> {
     const friendToAdd = await User.findOne({ username: username });
-    if (!friendToAdd) return false;
+    if (!friendToAdd) return { error: "That user does not exists" };
+
+    const exists = await Friend.findOne({
+      where: [
+        { userId: req.session.userId, friendId: friendToAdd.id },
+        { userId: friendToAdd.id, friendId: req.session.userId },
+      ],
+    });
+    if (exists)
+      return {
+        error: "This friendship already exists, or is currently pending.",
+      };
 
     await Friend.create({
       confirmed: false,
-      friend: friendToAdd,
-      user: me,
+      friendId: friendToAdd.id,
+      userId: req.session.userId,
     }).save();
 
-    return true;
+    const userRepository = getCustomRepository(UserRepository);
+    const friends = await userRepository.getPendingFriendRequests(
+      req.session.userId as string
+    );
+
+    return { friends };
   }
 
   @Query(() => [User])
@@ -201,7 +215,7 @@ export class UserResolver {
       __prod__ ? "prod site" : `http://localhost:3000/change-password/${token}`
     }">Reset password</a>`;
 
-    sendEmail(email, "Password Reset", text);
+    await sendEmail(email, "Password Reset", text);
     return true;
   }
 
@@ -213,9 +227,7 @@ export class UserResolver {
   ): Promise<UserResponse> {
     const errors = validatePassword(newPassword, "newPassword");
     if (errors) return { errors };
-
     const redisKey = FORGOT_PASSWORD_PREFIX + token;
-
     const userId = await redis.get(redisKey);
     if (!userId) {
       return {
@@ -227,9 +239,7 @@ export class UserResolver {
         ],
       };
     }
-
     const user = await User.findOne(userId);
-
     if (!user) {
       return {
         errors: [
@@ -240,13 +250,9 @@ export class UserResolver {
         ],
       };
     }
-
     await User.update(userId, { password: await hashPassword(newPassword) });
-
     redis.del(redisKey);
-
     req.session.userId = user.id;
-
     return { user };
   }
 }

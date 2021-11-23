@@ -22,20 +22,6 @@ export type FieldError = {
   message: Scalars['String'];
 };
 
-export type FriendList = {
-  __typename?: 'FriendList';
-  friends: Array<FriendResponse>;
-  pending: Array<FriendResponse>;
-  requests: Array<FriendResponse>;
-};
-
-export type FriendResponse = {
-  __typename?: 'FriendResponse';
-  confirmed: Scalars['Boolean'];
-  initiator: Scalars['String'];
-  user: User;
-};
-
 export type Mutation = {
   __typename?: 'Mutation';
   addFriend: Scalars['Boolean'];
@@ -75,8 +61,10 @@ export type MutationRegisterArgs = {
 
 export type Query = {
   __typename?: 'Query';
-  friends: FriendList;
+  friendRequests: Array<User>;
+  friends: Array<User>;
   me?: Maybe<User>;
+  pendingFriends: Array<User>;
   searchForUser?: Maybe<Array<User>>;
 };
 
@@ -93,6 +81,7 @@ export type User = {
   id: Scalars['String'];
   updatedAt: Scalars['DateTime'];
   username: Scalars['String'];
+  visibility: Scalars['String'];
 };
 
 export type UserResponse = {
@@ -107,7 +96,7 @@ export type UsernamePasswordInput = {
   username: Scalars['String'];
 };
 
-export type FriendFragment = { __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } };
+export type FriendFragment = { __typename?: 'User', username: string, displayName: string };
 
 export type SelfFragment = { __typename?: 'User', id: string, username: string, email: string, displayName: string };
 
@@ -159,15 +148,25 @@ export type RegisterMutationVariables = Exact<{
 
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined } };
 
+export type FriendRequestsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FriendRequestsQuery = { __typename?: 'Query', friendRequests: Array<{ __typename?: 'User', username: string, displayName: string }> };
+
 export type FriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type FriendsQuery = { __typename?: 'Query', friends: { __typename?: 'FriendList', friends: Array<{ __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } }>, pending: Array<{ __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } }>, requests: Array<{ __typename?: 'FriendResponse', user: { __typename?: 'User', username: string, displayName: string } }> } };
+export type FriendsQuery = { __typename?: 'Query', friends: Array<{ __typename?: 'User', username: string, displayName: string }> };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined };
+
+export type PendingFriendsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PendingFriendsQuery = { __typename?: 'Query', pendingFriends: Array<{ __typename?: 'User', username: string, displayName: string }> };
 
 export type SearchForUserQueryVariables = Exact<{
   username: Scalars['String'];
@@ -177,11 +176,9 @@ export type SearchForUserQueryVariables = Exact<{
 export type SearchForUserQuery = { __typename?: 'Query', searchForUser?: Array<{ __typename?: 'User', username: string, displayName: string }> | null | undefined };
 
 export const FriendFragmentDoc = gql`
-    fragment Friend on FriendResponse {
-  user {
-    username
-    displayName
-  }
+    fragment Friend on User {
+  username
+  displayName
 }
     `;
 export const SelfFragmentDoc = gql`
@@ -410,18 +407,44 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
+export const FriendRequestsDocument = gql`
+    query FriendRequests {
+  friendRequests {
+    ...Friend
+  }
+}
+    ${FriendFragmentDoc}`;
+
+/**
+ * __useFriendRequestsQuery__
+ *
+ * To run a query within a React component, call `useFriendRequestsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFriendRequestsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFriendRequestsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useFriendRequestsQuery(baseOptions?: Apollo.QueryHookOptions<FriendRequestsQuery, FriendRequestsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<FriendRequestsQuery, FriendRequestsQueryVariables>(FriendRequestsDocument, options);
+      }
+export function useFriendRequestsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FriendRequestsQuery, FriendRequestsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<FriendRequestsQuery, FriendRequestsQueryVariables>(FriendRequestsDocument, options);
+        }
+export type FriendRequestsQueryHookResult = ReturnType<typeof useFriendRequestsQuery>;
+export type FriendRequestsLazyQueryHookResult = ReturnType<typeof useFriendRequestsLazyQuery>;
+export type FriendRequestsQueryResult = Apollo.QueryResult<FriendRequestsQuery, FriendRequestsQueryVariables>;
 export const FriendsDocument = gql`
     query Friends {
   friends {
-    friends {
-      ...Friend
-    }
-    pending {
-      ...Friend
-    }
-    requests {
-      ...Friend
-    }
+    ...Friend
   }
 }
     ${FriendFragmentDoc}`;
@@ -486,14 +509,47 @@ export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery
 export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const PendingFriendsDocument = gql`
+    query PendingFriends {
+  pendingFriends {
+    ...Friend
+  }
+}
+    ${FriendFragmentDoc}`;
+
+/**
+ * __usePendingFriendsQuery__
+ *
+ * To run a query within a React component, call `usePendingFriendsQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePendingFriendsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePendingFriendsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function usePendingFriendsQuery(baseOptions?: Apollo.QueryHookOptions<PendingFriendsQuery, PendingFriendsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PendingFriendsQuery, PendingFriendsQueryVariables>(PendingFriendsDocument, options);
+      }
+export function usePendingFriendsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PendingFriendsQuery, PendingFriendsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PendingFriendsQuery, PendingFriendsQueryVariables>(PendingFriendsDocument, options);
+        }
+export type PendingFriendsQueryHookResult = ReturnType<typeof usePendingFriendsQuery>;
+export type PendingFriendsLazyQueryHookResult = ReturnType<typeof usePendingFriendsLazyQuery>;
+export type PendingFriendsQueryResult = Apollo.QueryResult<PendingFriendsQuery, PendingFriendsQueryVariables>;
 export const SearchForUserDocument = gql`
     query SearchForUser($username: String!) {
   searchForUser(username: $username) {
-    username
-    displayName
+    ...Friend
   }
 }
-    `;
+    ${FriendFragmentDoc}`;
 
 /**
  * __useSearchForUserQuery__

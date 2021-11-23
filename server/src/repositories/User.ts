@@ -3,7 +3,7 @@ import { User } from "../entities/User";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  getPendingFriendRequests(userId: string) {
+  getPendingFriendRequests(userId: string): Promise<User[]> {
     return getConnection().query(
       ` SELECT *
         FROM "user" U
@@ -13,7 +13,7 @@ export class UserRepository extends Repository<User> {
     );
   }
 
-  getFriends(userId: string) {
+  getFriends(userId: string): Promise<User[]> {
     return getConnection().query(
       ` SELECT *
         FROM "user" U
@@ -28,7 +28,7 @@ export class UserRepository extends Repository<User> {
       [userId]
     );
   }
-  getFriendRequests(userId: string) {
+  getFriendRequests(userId: string): Promise<User[]> {
     return getConnection().query(
       ` SELECT *
         FROM "user" U

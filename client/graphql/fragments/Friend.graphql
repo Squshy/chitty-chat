@@ -1,6 +1,4 @@
-fragment Friend on FriendResponse {
-  user {
-    username
-    displayName
-  }
+fragment Friend on User {
+  username
+  displayName
 }
