@@ -15,6 +15,7 @@ import { MyContext } from "./types";
 import path from "path";
 import { User } from "./entities/User";
 import { Friend } from "./entities/Friend";
+import { FriendResolver } from "./resolvers/friend";
 
 const main = async () => {
   const conn = await createConnection({
@@ -63,7 +64,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UserResolver],
+      resolvers: [UserResolver, FriendResolver],
       validate: false,
     }),
     // context is object accessible by all resolvers

@@ -1,33 +1,26 @@
+import { hash as hashPassword, verify } from "argon2";
 import {
   Arg,
   Ctx,
   Mutation,
   Query,
-  Resolver,
-  UseMiddleware,
+  Resolver
 } from "type-graphql";
-import { User } from "../entities/User";
-import { MyContext } from "../types";
-import { hash as hashPassword, verify } from "argon2";
-import { validateRegister } from "../util/validateUsernamePasswordInput";
-import { handleRegisterErrors } from "../util/handleRegisterErrors";
+import { v4 as uuid } from "uuid";
 import {
   COOKIE_NAME,
   FORGOT_PASSWORD_DAY_LIMIT,
   FORGOT_PASSWORD_PREFIX,
-  __prod__,
+  __prod__
 } from "../constants";
-import { getConnection, getCustomRepository } from "typeorm";
+import { User } from "../entities/User";
+import { MyContext } from "../types";
+import { handleRegisterErrors } from "../util/handleRegisterErrors";
 import { sendEmail } from "../util/sendEmail";
-import { v4 as uuid } from "uuid";
 import { validatePassword } from "../util/validatePassword";
-import { isAuth } from "../middleware/isAuth";
-import { Friend } from "../entities/Friend";
-import { UserRepository } from "../repositories/User";
+import { validateRegister } from "../util/validateUsernamePasswordInput";
 import {
-  UserResponse,
-  UsernamePasswordInput,
-  FriendResponse,
+  UsernamePasswordInput, UserResponse
 } from "./responses/userResponses";
 
 @Resolver(User)
@@ -116,83 +109,6 @@ export class UserResolver {
         resolve(true);
       })
     );
-  }
-
-  @Query(() => [User], { nullable: true })
-  @UseMiddleware(isAuth)
-  async searchForUser(
-    @Arg("username") username: String,
-    @Ctx() { req }: MyContext
-  ) {
-    const results = await getConnection()
-      .createQueryBuilder()
-      .select(`*, username <-> '${username}' AS dist`)
-      .where("id != :id AND visibility = :visibility", {
-        id: req.session.userId,
-        visibility: "public",
-      })
-      .from(User, "user")
-      .orderBy(`dist`)
-      .limit(10)
-      .getRawMany();
-    return results;
-  }
-
-  @Mutation(() => FriendResponse)
-  @UseMiddleware(isAuth)
-  async addFriend(
-    @Arg("username") username: string,
-    @Ctx() { req }: MyContext
-  ): Promise<FriendResponse> {
-    const friendToAdd = await User.findOne({ username: username });
-    if (!friendToAdd) return { error: "That user does not exists" };
-
-    const exists = await Friend.findOne({
-      where: [
-        { userId: req.session.userId, friendId: friendToAdd.id },
-        { userId: friendToAdd.id, friendId: req.session.userId },
-      ],
-    });
-    if (exists)
-      return {
-        error: "This friendship already exists, or is currently pending.",
-      };
-
-    await Friend.create({
-      confirmed: false,
-      friendId: friendToAdd.id,
-      userId: req.session.userId,
-    }).save();
-
-    const userRepository = getCustomRepository(UserRepository);
-    const friends = await userRepository.getPendingFriendRequests(
-      req.session.userId as string
-    );
-
-    return { friends };
-  }
-
-  @Query(() => [User])
-  @UseMiddleware(isAuth)
-  async friends(@Ctx() { req }: MyContext): Promise<User[]> {
-    const userRepository = getCustomRepository(UserRepository);
-    return await userRepository.getFriends(req.session.userId as string);
-  }
-
-  @Query(() => [User])
-  @UseMiddleware(isAuth)
-  async pendingFriends(@Ctx() { req }: MyContext): Promise<User[]> {
-    const userRepository = getCustomRepository(UserRepository);
-    return await userRepository.getPendingFriendRequests(
-      req.session.userId as string
-    );
-  }
-
-  @Query(() => [User])
-  @UseMiddleware(isAuth)
-  async friendRequests(@Ctx() { req }: MyContext): Promise<User[]> {
-    const userRepository = getCustomRepository(UserRepository);
-    return await userRepository.getFriendRequests(req.session.userId as string);
   }
 
   @Mutation(() => Boolean)
