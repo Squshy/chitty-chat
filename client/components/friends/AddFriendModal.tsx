@@ -1,6 +1,6 @@
 import { useLazyQuery } from "@apollo/client";
 import { Transition, Dialog } from "@headlessui/react";
-import React, { Fragment, useState } from "react";
+import React, { Fragment } from "react";
 import {
   PendingFriendsDocument,
   PendingFriendsQuery,
@@ -19,7 +19,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
   closeModal,
   isOpen,
 }) => {
-  const [searchForUser, { loading, error, data: searchData }] =
+  const [searchForUser, { loading, error, data: searchData, refetch }] =
     useLazyQuery<SearchForUserQuery>(SearchForUserDocument, {
       fetchPolicy: "no-cache",
     });
@@ -38,16 +38,6 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
             ],
           },
         });
-        // cache.writeQuery<SearchForUserQuery>({
-        //   query: SearchForUserDocument,
-        //   data: {
-        //     __typename: "Query",
-        //     searchForUser:
-        //       searchData?.searchForUser?.filter(
-        //         (user) => user.username !== data.addFriend.friend?.username
-        //       ) || [],
-        //   },
-        // });
       }
     },
   });
@@ -124,6 +114,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                           await addFriend({
                             variables: { username: user.username },
                           });
+                          refetch && await refetch();
                         }}
                       />
                     );
