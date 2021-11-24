@@ -44,7 +44,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
 
   const validateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
-    if (text.length <= 2) return;
+    if (text.length <= 2 || text.length > 14) return;
 
     searchForUser({
       variables: { username: text },
@@ -99,11 +99,11 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                   <input
                     type="text"
                     placeholder="Enter a username"
-                    className="appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight focus:outline-none focus:ring bg-[#4a4a4a] border-[#1a1a1a] border"
+                    className="appearance-none w-full shadow-md rounded py-2 px-3 leading-tight focus:outline-none focus:ring bg-[#4a4a4a] border-[#1a1a1a] border"
                     onChange={(e) => validateSearch(e)}
                   />
                 </div>
-                <div className="mt-2 bg-mid rounded">
+                <div className="mt-2 rounded overflow-y-auto h-64 scrollbar scrollbar-thin scrollbar-thumb-viat-666 scrollbar-track-viat-medium scrollbar-thumb-rounded-md scrollbar-track-rounded-md">
                   {searchData?.searchForUser?.map((user) => {
                     return (
                       <AddFriendDetail
@@ -114,19 +114,11 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                           await addFriend({
                             variables: { username: user.username },
                           });
-                          refetch && await refetch();
+                          refetch && (await refetch());
                         }}
                       />
                     );
                   })}
-                </div>
-                <div className="mt-4">
-                  <button
-                    type="button"
-                    className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-                  >
-                    Got it, thanks!
-                  </button>
                 </div>
               </div>
             </Transition.Child>
