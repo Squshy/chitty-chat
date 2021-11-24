@@ -33,6 +33,7 @@ export const FriendsHeader: React.FC<HeaderProps> = ({
         <div className="flex -mx-2">
           {Object.values(FriendSorts).map((sort) => (
             <HeaderButton
+              key={sort}
               text={sort}
               selected={currentOption === sort}
               onClick={() => onClick(sort)}

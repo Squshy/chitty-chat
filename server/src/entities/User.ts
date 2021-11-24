@@ -31,13 +31,15 @@ export class User extends BaseEntity {
   displayName!: string;
 
   @Field()
-  @Column({default: 'public'})
-  visibility!: 'public' | 'private';
+  @Column({ default: "public" })
+  visibility!: "public" | "private";
 
   @Column()
   password!: string;
 
-  @OneToMany(() => Friend, (friend) => friend.user || friend.friend)
+  @OneToMany(() => Friend, (friend) => friend.user || friend.friend, {
+    onDelete: "CASCADE",
+  })
   @JoinTable()
   friends!: User[];
 

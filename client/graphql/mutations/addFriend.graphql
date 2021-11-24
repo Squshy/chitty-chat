@@ -1,3 +1,5 @@
 mutation AddFriend($username: String!) {
-  addFriend(username: $username)
+  addFriend(username: $username) {
+    ...FriendResponse
+  }
 }

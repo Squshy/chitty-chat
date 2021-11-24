@@ -1,7 +1,9 @@
 import { useLazyQuery } from "@apollo/client";
 import { Transition, Dialog } from "@headlessui/react";
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import {
+  PendingFriendsDocument,
+  PendingFriendsQuery,
   SearchForUserDocument,
   SearchForUserQuery,
   useAddFriendMutation,
@@ -17,10 +19,47 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
   closeModal,
   isOpen,
 }) => {
-  const [searchForUser, { loading, error, data }] = useLazyQuery(
-    SearchForUserDocument
-  );
-  const [addFriend] = useAddFriendMutation();
+  const [searchForUser, { loading, error, data: searchData }] =
+    useLazyQuery<SearchForUserQuery>(SearchForUserDocument, {
+      fetchPolicy: "no-cache",
+    });
+  const [addFriend] = useAddFriendMutation({
+    update(cache, { data }) {
+      if (data?.addFriend.friend) {
+        cache.writeQuery<PendingFriendsQuery>({
+          query: PendingFriendsDocument,
+          data: {
+            __typename: "Query",
+            pendingFriends: [
+              ...(cache.readQuery<PendingFriendsQuery>({
+                query: PendingFriendsDocument,
+              })?.pendingFriends || []),
+              data.addFriend.friend,
+            ],
+          },
+        });
+        // cache.writeQuery<SearchForUserQuery>({
+        //   query: SearchForUserDocument,
+        //   data: {
+        //     __typename: "Query",
+        //     searchForUser:
+        //       searchData?.searchForUser?.filter(
+        //         (user) => user.username !== data.addFriend.friend?.username
+        //       ) || [],
+        //   },
+        // });
+      }
+    },
+  });
+
+  const validateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+    if (text.length <= 2) return;
+
+    searchForUser({
+      variables: { username: text },
+    });
+  };
 
   return (
     <>
@@ -71,21 +110,21 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                     type="text"
                     placeholder="Enter a username"
                     className="appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight focus:outline-none focus:ring bg-[#4a4a4a] border-[#1a1a1a] border"
-                    onChange={(e) =>
-                      searchForUser({ variables: { username: e.target.value } })
-                    }
+                    onChange={(e) => validateSearch(e)}
                   />
                 </div>
                 <div className="mt-2 bg-mid rounded">
-                  {(data as SearchForUserQuery)?.searchForUser?.map((u) => {
+                  {searchData?.searchForUser?.map((user) => {
                     return (
                       <AddFriendDetail
-                        key={u.username}
-                        displayName={u.displayName}
-                        username={u.username}
-                        addFriend={async () =>
-                          await addFriend({ variables: { username: u.username }})
-                        }
+                        key={user.username}
+                        displayName={user.displayName}
+                        username={user.username}
+                        addFriend={async () => {
+                          await addFriend({
+                            variables: { username: user.username },
+                          });
+                        }}
                       />
                     );
                   })}

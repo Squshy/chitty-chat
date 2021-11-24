@@ -22,10 +22,17 @@ export type FieldError = {
   message: Scalars['String'];
 };
 
+export type FriendResponse = {
+  __typename?: 'FriendResponse';
+  error?: Maybe<Scalars['String']>;
+  friend?: Maybe<User>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
-  addFriend: Scalars['Boolean'];
+  addFriend: FriendResponse;
   changePassword: UserResponse;
+  confirmFriend: FriendResponse;
   forgotPassword: Scalars['Boolean'];
   login: UserResponse;
   logout: Scalars['Boolean'];
@@ -41,6 +48,11 @@ export type MutationAddFriendArgs = {
 export type MutationChangePasswordArgs = {
   newPassword: Scalars['String'];
   token: Scalars['String'];
+};
+
+
+export type MutationConfirmFriendArgs = {
+  username: Scalars['String'];
 };
 
 
@@ -98,6 +110,8 @@ export type UsernamePasswordInput = {
 
 export type FriendFragment = { __typename?: 'User', username: string, displayName: string };
 
+export type FriendResponseFragment = { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, displayName: string } | null | undefined };
+
 export type SelfFragment = { __typename?: 'User', id: string, username: string, email: string, displayName: string };
 
 export type UserFragment = { __typename?: 'User', id: string, username: string, email: string, displayName: string };
@@ -111,7 +125,7 @@ export type AddFriendMutationVariables = Exact<{
 }>;
 
 
-export type AddFriendMutation = { __typename?: 'Mutation', addFriend: boolean };
+export type AddFriendMutation = { __typename?: 'Mutation', addFriend: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, displayName: string } | null | undefined } };
 
 export type ChangePasswordMutationVariables = Exact<{
   newPassword: Scalars['String'];
@@ -181,6 +195,15 @@ export const FriendFragmentDoc = gql`
   displayName
 }
     `;
+export const FriendResponseFragmentDoc = gql`
+    fragment FriendResponse on FriendResponse {
+  error
+  friend {
+    username
+    displayName
+  }
+}
+    `;
 export const SelfFragmentDoc = gql`
     fragment Self on User {
   id
@@ -216,9 +239,11 @@ export const UserResponseFragmentDoc = gql`
 ${UserFragmentDoc}`;
 export const AddFriendDocument = gql`
     mutation AddFriend($username: String!) {
-  addFriend(username: $username)
+  addFriend(username: $username) {
+    ...FriendResponse
+  }
 }
-    `;
+    ${FriendResponseFragmentDoc}`;
 export type AddFriendMutationFn = Apollo.MutationFunction<AddFriendMutation, AddFriendMutationVariables>;
 
 /**

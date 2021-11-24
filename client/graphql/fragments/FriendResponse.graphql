@@ -1,0 +1,7 @@
+fragment FriendResponse on FriendResponse {
+  error
+  friend {
+    username
+    displayName
+  }
+}

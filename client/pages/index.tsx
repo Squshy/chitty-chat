@@ -8,6 +8,12 @@ export default function Home() {
       <ul className="list-disc">
         <li className="">Confirm logout modal</li>
         <li className="">Add S3 image hosting</li>
+        <li className="">
+          On user search show current pending or added friends in search with
+          special UI
+        </li>
+        <li className="">Add profile pictures</li>
+        <li className="">Add Block list</li>
       </ul>
     </div>
   );
