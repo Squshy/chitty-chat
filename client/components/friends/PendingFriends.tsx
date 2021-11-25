@@ -1,20 +1,32 @@
-import { useApolloClient } from "@apollo/client";
 import React from "react";
 import {
-  FriendFragment,
+  FriendRequestsDocument,
+  FriendRequestsQuery,
+  FriendsDocument,
+  FriendsQuery,
   PendingFriendsDocument,
   PendingFriendsQuery,
+  useAcceptFriendRequestMutation,
+  useDeclineFriendRequestMutation,
+  useFriendRequestsQuery,
   usePendingFriendsQuery,
   useRevokeFriendRequestMutation,
 } from "../../generated/graphql";
+import { IncomingFriend } from "./IncomingFriend";
+import { PendingBlock } from "./PendingBlock";
 import { PendingFriend } from "./PendingFriend";
 
 interface PendingFriendsProps {}
 
 export const PendingFriends: React.FC<PendingFriendsProps> = ({}) => {
-  const { data, loading } = usePendingFriendsQuery();
-  const [revokeFriendRequest] = useRevokeFriendRequestMutation();
-  const client = useApolloClient();
+  const { data: pending } = usePendingFriendsQuery();
+  const { data: incoming } = useFriendRequestsQuery();
+  const [revokeFriendRequest, { loading: revokeLoading }] =
+    useRevokeFriendRequestMutation();
+  const [acceptFriendRequest, { loading: acceptLoading }] =
+    useAcceptFriendRequestMutation();
+  const [declineFriendRequest, { loading: declineLoading }] =
+    useDeclineFriendRequestMutation();
 
   const revoke = async (username: string) => {
     await revokeFriendRequest({
@@ -41,36 +53,109 @@ export const PendingFriends: React.FC<PendingFriendsProps> = ({}) => {
     });
   };
 
-  const Pending = () => {
-    if (data?.pendingFriends) {
-      if (data.pendingFriends.length > 0) {
-        return (
-          <>
-            {data.pendingFriends.map((friend) => {
-              return (
-                <PendingFriend
-                  key={friend.username}
-                  friend={friend}
-                  revoke={() => revoke(friend.username)}
-                />
-              );
-            })}
-          </>
-        );
-      }
-    }
-    return (
-      <div className="p-4">
-        <p className="italic text-[#666666] text-center">
-          You have no pending friend requests
-        </p>
-      </div>
-    );
+  const decline = async (username: string) => {
+    await declineFriendRequest({
+      variables: { username: username },
+      update: (cache, { data }) => {
+        if (!data?.declineFriendRequest.error) {
+          cache.writeQuery<FriendRequestsQuery>({
+            query: FriendRequestsDocument,
+            data: {
+              __typename: "Query",
+              friendRequests: [
+                ...(cache
+                  .readQuery<FriendRequestsQuery>({
+                    query: FriendRequestsDocument,
+                  })
+                  ?.friendRequests.filter(
+                    (f) =>
+                      f.username !== data!.declineFriendRequest.friend!.username
+                  ) || []),
+              ],
+            },
+          });
+        }
+      },
+    });
+  };
+
+  const accept = async (username: string) => {
+    await acceptFriendRequest({
+      variables: { username: username },
+      update: (cache, { data }) => {
+        if (
+          !data?.acceptFriendRequest.error &&
+          data?.acceptFriendRequest.friend
+        ) {
+          cache.writeQuery<FriendRequestsQuery>({
+            query: FriendRequestsDocument,
+            data: {
+              __typename: "Query",
+              friendRequests: [
+                ...(cache
+                  .readQuery<FriendRequestsQuery>({
+                    query: FriendRequestsDocument,
+                  })
+                  ?.friendRequests.filter(
+                    (f) =>
+                      f.username !== data!.acceptFriendRequest.friend!.username
+                  ) || []),
+              ],
+            },
+          });
+          cache.writeQuery<FriendsQuery>({
+            query: FriendsDocument,
+            data: {
+              __typename: "Query",
+              friends: [
+                ...(cache.readQuery<FriendsQuery>({
+                  query: FriendsDocument,
+                })?.friends || []),
+                data.acceptFriendRequest.friend,
+              ],
+            },
+          });
+        }
+      },
+    });
   };
 
   return (
-    <div className="divide-y divide-[#383838] border-t border-b border-[#383838]">
-      <Pending />
+    <div className="space-y-12">
+      <PendingBlock title="Incoming Friend Requests" type="incoming">
+        {incoming?.friendRequests &&
+          incoming.friendRequests.length > 0 &&
+          incoming.friendRequests.map((friend) => {
+            return (
+              <IncomingFriend
+                key={friend.username}
+                friend={friend}
+                disableAccept={acceptLoading}
+                disableDecline={declineLoading}
+                accept={() => accept(friend.username)}
+                decline={() => decline(friend.username)}
+              />
+            );
+          })}
+      </PendingBlock>
+      <PendingBlock
+        title="Pending Friend Requests"
+        type="pending"
+        className="mt-4"
+      >
+        {pending?.pendingFriends &&
+          pending.pendingFriends.length > 0 &&
+          pending.pendingFriends.map((friend) => {
+            return (
+              <PendingFriend
+                key={friend.username}
+                friend={friend}
+                disabled={revokeLoading}
+                revoke={() => revoke(friend.username)}
+              />
+            );
+          })}
+      </PendingBlock>
     </div>
   );
 };

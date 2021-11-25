@@ -1,4 +1,3 @@
-import { BaseLogoutButton } from "../components/buttons/BaseLogoutButton";
 import { FriendHub } from "../components/friends/FriendHub";
 import { SideBar } from "../components/sideBar/SideBar";
 import { User } from "../generated/graphql";

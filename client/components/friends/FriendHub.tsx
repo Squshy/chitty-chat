@@ -21,7 +21,7 @@ export const FriendHub: React.FC<FriendHubProps> = ({}) => {
   return (
     <>
       <FriendsHeader currentOption={currentOption} onClick={setCurrentOption} />
-      <div className="flex-col w-ful bg-opacity-50 flex flex-grow space-y-4 p-8">
+      <div className="flex-col w-full bg-opacity-50 flex flex-grow space-y-4 p-8">
         <ShowFriends />
       </div>
     </>

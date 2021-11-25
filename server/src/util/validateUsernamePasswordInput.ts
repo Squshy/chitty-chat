@@ -1,4 +1,4 @@
-import { UsernamePasswordInput } from "../types";
+import { UsernamePasswordInput } from "../resolvers/responses/userResponses";
 import { validatePassword } from "./validatePassword";
 
 export const validateRegister = (options: UsernamePasswordInput) => {

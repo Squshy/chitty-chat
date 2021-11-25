@@ -1,0 +1,5 @@
+mutation AcceptFriendRequest($username: String!) {
+  acceptFriendRequest(username: $username) {
+    ...FriendResponse
+  }
+}

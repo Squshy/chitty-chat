@@ -43,7 +43,7 @@ export const FriendsHeader: React.FC<HeaderProps> = ({
             className="group transition duration 150 ease-out mx-2 p-2 self-center hover:bg-opacity-75 rounded-md"
             onClick={openModal}
           >
-            <UserAddIcon className="transform transition duration-150 ease-out w-6 h-6 text-green-400 group-hover:scale-105 group-hover:text-green-600" />
+            <UserAddIcon className="transform transition duration-150 ease-out w-6 h-6 text-green-600 group-hover:scale-105 group-hover:text-green-400" />
           </button>
         </div>
       </div>

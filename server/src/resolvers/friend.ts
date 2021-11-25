@@ -74,7 +74,7 @@ export class FriendResolver {
 
   @Mutation(() => FriendResponse)
   @UseMiddleware(isAuth)
-  async confirmFriend(
+  async acceptFriendRequest(
     @Arg("username") username: string,
     @Ctx() { req }: MyContext
   ): Promise<FriendResponse> {
@@ -103,6 +103,31 @@ export class FriendResolver {
 
   @Mutation(() => FriendResponse)
   @UseMiddleware(isAuth)
+  async declineFriendRequest(
+    @Arg("username") username: string,
+    @Ctx() { req }: MyContext
+  ) {
+    const { friend, error } = await doesUserExist(username);
+    if (error) return { error };
+
+    try {
+      getConnection()
+        .createQueryBuilder()
+        .delete()
+        .from(Friend)
+        .where("user_id = :friend AND friend_id = :me", {
+          friend: friend!.id,
+          me: req.session.userId,
+        })
+        .execute();
+    } catch (error) {
+      return { error };
+    }
+    return { friend };
+  }
+
+  @Mutation(() => FriendResponse)
+  @UseMiddleware(isAuth)
   async revokeFriendRequest(
     @Arg("username") username: string,
     @Ctx() { req }: MyContext
@@ -121,7 +146,6 @@ export class FriendResolver {
         })
         .execute();
     } catch (error) {
-      console.error(error);
       return { error };
     }
     return { friend };

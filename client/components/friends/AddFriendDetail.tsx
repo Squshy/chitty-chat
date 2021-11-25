@@ -5,11 +5,13 @@ interface AddFriendDetailProps {
   username: string;
   displayName: string;
   addFriend: () => void;
+  disabled: boolean;
 }
 
 export const AddFriendDetail: React.FC<AddFriendDetailProps> = ({
   username,
   displayName,
+  disabled,
   addFriend,
 }) => {
   return (
@@ -21,7 +23,7 @@ export const AddFriendDetail: React.FC<AddFriendDetailProps> = ({
         </p>
       </div>
       <div className="flex justify-center">
-        <button onClick={addFriend}>
+        <button onClick={addFriend} disabled={disabled}>
           <UserAddIcon className="transform duration-75 ease-in-out w-6 text-green-400 hover:scale-110" />
         </button>
       </div>

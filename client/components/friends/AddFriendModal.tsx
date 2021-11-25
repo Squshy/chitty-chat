@@ -23,7 +23,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
     useLazyQuery<SearchForUserQuery>(SearchForUserDocument, {
       fetchPolicy: "no-cache",
     });
-  const [addFriend] = useAddFriendMutation({
+  const [addFriend, { loading: addFriendLoading }] = useAddFriendMutation({
     update(cache, { data }) {
       if (data?.addFriend.friend) {
         cache.writeQuery<PendingFriendsQuery>({
@@ -110,6 +110,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                         key={user.username}
                         displayName={user.displayName}
                         username={user.username}
+                        disabled={addFriendLoading}
                         addFriend={async () => {
                           await addFriend({
                             variables: { username: user.username },
