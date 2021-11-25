@@ -22,7 +22,7 @@ export const FormLabelInput: React.FC<FormLabelInputProps> = ({
         {label.toUpperCase()}
       </label>
       <input
-        className={`focus:outline-none appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight  focus:ring-2 focus:ring-offset-2 focus-visible:ring-purple-700 bg-[#4a4a4a] border-[#1a1a1a] border${
+        className={`focus:outline-none appearance-none w-full shadow-sm rounded py-2 px-3 leading-tight  focus:ring-2 focus-visible:ring-purple-500 bg-[#4a4a4a] border-[#1a1a1a] border${
           error && " border-viat-error"
         }`}
         {...field}
