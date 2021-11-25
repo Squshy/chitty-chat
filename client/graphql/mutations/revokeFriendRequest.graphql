@@ -1,0 +1,5 @@
+mutation RevokeFriendRequest($username: String!) {
+  revokeFriendRequest(username: $username) {
+    ...FriendResponse
+  }
+}

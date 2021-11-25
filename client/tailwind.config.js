@@ -9,6 +9,7 @@ module.exports = {
           dark: "#1e1e1e",
           medium: "#2b2b2b",
           666: "#666666",
+          error: "#f7022a",
         },
       },
       backgroundColor: {
@@ -18,7 +19,7 @@ module.exports = {
     },
   },
   variants: {
-    scrollbar: ['rounded'],
+    scrollbar: ["rounded"],
     extend: {},
   },
   plugins: [require("tailwind-scrollbar")],

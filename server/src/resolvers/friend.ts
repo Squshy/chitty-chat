@@ -12,6 +12,7 @@ import { User } from "../entities/User";
 import { isAuth } from "../middleware/isAuth";
 import { UserRepository } from "../repositories/User";
 import { MyContext } from "../types";
+import { doesUserExist } from "../util/doesUserExists";
 import { FriendResponse } from "./responses/friendResponses";
 
 @Resolver(Friend)
@@ -22,17 +23,6 @@ export class FriendResolver {
     @Arg("username") username: String,
     @Ctx() { req }: MyContext
   ) {
-    // const users = await getConnection()
-    //   .createQueryBuilder()
-    //   .select(`*, username <-> '${username}' AS dist`)
-    //   .where("id <> :id AND visibility = public", {
-    //     id: req.session.userId,
-    //   })
-    //   .from(User, "user")
-    //   .orderBy("dist")
-    //   .limit(10)
-    //   .getRawMany();
-
     const users = await getConnection().query(
       `
       SELECT *, username <-> $2 AS dist
@@ -55,13 +45,13 @@ export class FriendResolver {
     @Arg("username") username: string,
     @Ctx() { req }: MyContext
   ): Promise<FriendResponse> {
-    const friend = await User.findOne({ username: username });
-    if (!friend) return { error: "That user does not exists" };
+    const { friend, error } = await doesUserExist(username);
+    if (error) return { error };
 
     const exists = await Friend.findOne({
       where: [
-        { userId: req.session.userId, friendId: friend.id },
-        { userId: friend.id, friendId: req.session.userId },
+        { userId: req.session.userId, friendId: friend!.id },
+        { userId: friend!.id, friendId: req.session.userId },
       ],
     });
     if (exists)
@@ -73,7 +63,7 @@ export class FriendResolver {
     try {
       await Friend.create({
         confirmed: false,
-        friendId: friend.id,
+        friendId: friend!.id,
         userId: req.session.userId,
       }).save();
     } catch (error) {
@@ -88,8 +78,8 @@ export class FriendResolver {
     @Arg("username") username: string,
     @Ctx() { req }: MyContext
   ): Promise<FriendResponse> {
-    const friend = await User.findOne({ username: username });
-    if (!friend) return { error: "That user does not exists" };
+    const { friend, error } = await doesUserExist(username);
+    if (error) return { error };
 
     try {
       await getConnection()
@@ -100,7 +90,7 @@ export class FriendResolver {
           "user_id = :me AND friend_id = :friend OR user_id = :friend AND friend_id = :me",
           {
             me: req.session.userId,
-            friend: friend.id,
+            friend: friend!.id,
           }
         )
         .execute();
@@ -108,6 +98,32 @@ export class FriendResolver {
       return { error };
     }
 
+    return { friend };
+  }
+
+  @Mutation(() => FriendResponse)
+  @UseMiddleware(isAuth)
+  async revokeFriendRequest(
+    @Arg("username") username: string,
+    @Ctx() { req }: MyContext
+  ): Promise<FriendResponse> {
+    const { friend, error } = await doesUserExist(username);
+    if (error) return { error };
+
+    try {
+      getConnection()
+        .createQueryBuilder()
+        .delete()
+        .from(Friend)
+        .where("user_id = :me AND friend_id = :friend", {
+          me: req.session.userId,
+          friend: friend!.id,
+        })
+        .execute();
+    } catch (error) {
+      console.error(error);
+      return { error };
+    }
     return { friend };
   }
 

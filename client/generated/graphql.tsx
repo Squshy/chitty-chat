@@ -37,6 +37,7 @@ export type Mutation = {
   login: UserResponse;
   logout: Scalars['Boolean'];
   register: UserResponse;
+  revokeFriendRequest: FriendResponse;
 };
 
 
@@ -69,6 +70,11 @@ export type MutationLoginArgs = {
 
 export type MutationRegisterArgs = {
   options: UsernamePasswordInput;
+};
+
+
+export type MutationRevokeFriendRequestArgs = {
+  username: Scalars['String'];
 };
 
 export type Query = {
@@ -161,6 +167,13 @@ export type RegisterMutationVariables = Exact<{
 
 
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined } };
+
+export type RevokeFriendRequestMutationVariables = Exact<{
+  username: Scalars['String'];
+}>;
+
+
+export type RevokeFriendRequestMutation = { __typename?: 'Mutation', revokeFriendRequest: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, displayName: string } | null | undefined } };
 
 export type FriendRequestsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -432,6 +445,39 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
+export const RevokeFriendRequestDocument = gql`
+    mutation RevokeFriendRequest($username: String!) {
+  revokeFriendRequest(username: $username) {
+    ...FriendResponse
+  }
+}
+    ${FriendResponseFragmentDoc}`;
+export type RevokeFriendRequestMutationFn = Apollo.MutationFunction<RevokeFriendRequestMutation, RevokeFriendRequestMutationVariables>;
+
+/**
+ * __useRevokeFriendRequestMutation__
+ *
+ * To run a mutation, you first call `useRevokeFriendRequestMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRevokeFriendRequestMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [revokeFriendRequestMutation, { data, loading, error }] = useRevokeFriendRequestMutation({
+ *   variables: {
+ *      username: // value for 'username'
+ *   },
+ * });
+ */
+export function useRevokeFriendRequestMutation(baseOptions?: Apollo.MutationHookOptions<RevokeFriendRequestMutation, RevokeFriendRequestMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RevokeFriendRequestMutation, RevokeFriendRequestMutationVariables>(RevokeFriendRequestDocument, options);
+      }
+export type RevokeFriendRequestMutationHookResult = ReturnType<typeof useRevokeFriendRequestMutation>;
+export type RevokeFriendRequestMutationResult = Apollo.MutationResult<RevokeFriendRequestMutation>;
+export type RevokeFriendRequestMutationOptions = Apollo.BaseMutationOptions<RevokeFriendRequestMutation, RevokeFriendRequestMutationVariables>;
 export const FriendRequestsDocument = gql`
     query FriendRequests {
   friendRequests {
