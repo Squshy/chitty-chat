@@ -1,3 +1,4 @@
+import { ChatAlt2Icon } from "@heroicons/react/solid";
 import React from "react";
 import { useFriendsQuery } from "../../generated/graphql";
 import { BaseFriendDisplay } from "./BaseFriendDisplay";
@@ -10,7 +11,11 @@ export const FriendList: React.FC<FriendListProps> = ({}) => {
     <div>
       <div>
         {friends?.friends.map((friend) => {
-          return <BaseFriendDisplay friend={friend} key={friend.username} />;
+          return (
+            <BaseFriendDisplay friend={friend} key={friend.username}>
+              <ChatAlt2Icon className="w-6 text-viat-666" />
+            </BaseFriendDisplay>
+          );
         })}
       </div>
     </div>

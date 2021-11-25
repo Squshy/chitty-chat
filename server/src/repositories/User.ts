@@ -22,6 +22,7 @@ export class UserRepository extends Repository<User> {
       [userId]
     );
   }
+  
   getFriendRequests(userId: string): Promise<User[]> {
     return getConnection().query(
       ` SELECT *
