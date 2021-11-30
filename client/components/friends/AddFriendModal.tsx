@@ -10,6 +10,7 @@ import {
   useAddFriendMutation,
 } from "../../generated/graphql";
 import { AddFriendDetail } from "./AddFriendDetail";
+import { debounce } from "lodash";
 
 interface AddFriendModalProps {
   isOpen: boolean;
@@ -88,10 +89,13 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
   const validateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
     if (text.length <= 2 || text.length > 14) return;
-
-    searchForUser({
-      variables: { username: text },
-    });
+    debounce(
+      () =>
+        searchForUser({
+          variables: { username: text },
+        }),
+      250
+    )();
   };
 
   return (
