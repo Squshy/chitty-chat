@@ -1,10 +1,8 @@
 import { hash as hashPassword, verify } from "argon2";
-import { Profile } from "../entities/Profile";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { v4 as uuid } from "uuid";
 import {
   COOKIE_NAME,
-  DEFAULT_AVATAR,
   FORGOT_PASSWORD_DAY_LIMIT,
   FORGOT_PASSWORD_PREFIX,
   __prod__,

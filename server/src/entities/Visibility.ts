@@ -3,7 +3,7 @@ import {
   BaseEntity,
   Column,
   Entity,
-  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Profile } from "./Profile";
@@ -11,8 +11,7 @@ import { Profile } from "./Profile";
 @ObjectType()
 @Entity()
 export class Visibility extends BaseEntity {
-  @Field()
-  @ManyToOne(() => Profile, (profile) => profile.visibility)
+  @OneToMany(() => Profile, (profile) => profile.visibility)
   @PrimaryGeneratedColumn()
   id: number;
 

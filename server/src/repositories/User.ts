@@ -40,28 +40,45 @@ export class UserRepository extends Repository<User> {
     options: UsernamePasswordInput,
     password: string
   ): Promise<User> {
-    const user = await getConnection().query(
+    const ret = await getConnection().query(
       `
-    WITH new_profile AS 
-      (
-        WITH ins (vis, avatar, display) AS
-          ( VALUES
-            ('public', $1, $2)
+        WITH new_profile AS 
+          (
+            WITH ins (vis, avatar, display) AS
+              ( VALUES
+                ('public', $1, $2)
+              )
+            INSERT INTO profile ("visibilityId", avatar, "displayName")
+            
+            SELECT 
+                visibility.id, ins.avatar, ins.display
+            FROM 
+                visibility JOIN ins ON ins.vis = visibility.type 
+            RETURNING id
           )
-        INSERT INTO profile (visibility, avatar, "displayName")
-        
-        SELECT 
-            visibility.id, ins.avatar, ins.display
-        FROM 
-            visibility JOIN ins ON ins.vis = visibility.type 
-        RETURNING id
-      )
-    INSERT INTO "user" (username, email, "profileId", password)
-    VALUES
-    ($2, $3, (SELECT id FROM new_profile), $4) RETURNING id;
+        INSERT INTO "user" (username, email, "profileId", password)
+        VALUES
+        ($2, $3, (SELECT id FROM new_profile), $4) RETURNING id;
     `,
       [DEFAULT_AVATAR, options.username, options.email, password]
     );
-    return User.findOne(user.id, { relations: ["profile"] });
+    const id = ret[0].id;
+    let user;
+    try {
+      user = await getConnection()
+        .createQueryBuilder()
+        .select("user")
+        .from(User, "user")
+        .leftJoinAndSelect("user.profile", "profile")
+        .leftJoinAndSelect("profile.visibility", "visibility")
+        .where("user.id = :id", { id: id })
+        .getOne();
+    } catch (err) {
+      console.error(err);
+    }
+    console.log("id:", id);
+    console.log("User:", user);
+    if (user) return user;
+    throw "Cannot find newly created user for some reason";
   }
 }

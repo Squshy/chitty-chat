@@ -4,6 +4,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -13,13 +15,13 @@ import { Visibility } from "./Visibility";
 @ObjectType()
 @Entity()
 export class Profile extends BaseEntity {
-  @Field()
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn({ type: "bigint" })
+  id: string;
 
-  @OneToMany(() => Visibility, (visibility) => visibility.id)
-  @Column()
-  visibility: number;
+  @Field()
+  @ManyToOne(() => Visibility, (visibility) => visibility.id)
+  @JoinColumn()
+  visibility: Visibility;
 
   @Field()
   @Column()
