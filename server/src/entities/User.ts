@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   OneToMany,
   OneToOne,
@@ -30,8 +31,8 @@ export class User extends BaseEntity {
   email!: string;
 
   @OneToOne(() => Profile)
-  @Column({ unique: true })
-  profile: number;
+  @JoinColumn()
+  profile: Profile;
 
   @Column()
   password!: string;

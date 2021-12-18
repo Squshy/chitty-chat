@@ -1,8 +1,10 @@
 import { hash as hashPassword, verify } from "argon2";
+import { Profile } from "../entities/Profile";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { v4 as uuid } from "uuid";
 import {
   COOKIE_NAME,
+  DEFAULT_AVATAR,
   FORGOT_PASSWORD_DAY_LIMIT,
   FORGOT_PASSWORD_PREFIX,
   __prod__,
@@ -14,6 +16,8 @@ import { sendEmail } from "../util/sendEmail";
 import { validatePassword } from "../util/validatePassword";
 import { validateRegister } from "../util/validateUsernamePasswordInput";
 import { UsernamePasswordInput, UserResponse } from "./responses/userResponses";
+import { getCustomRepository } from "typeorm";
+import { UserRepository } from "../repositories/User";
 
 @Resolver(User)
 export class UserResolver {
@@ -33,21 +37,34 @@ export class UserResolver {
     if (errors) return { errors };
     const hashedPass = await hashPassword(options.password);
 
-    let user;
-    try {
-      user = await User.create({
-        email: options.email,
-        username: options.username,
-        password: hashedPass,
-      }).save();
-    } catch (err) {
-      const errors = handleRegisterErrors(err.code, err.detail);
-      return { errors };
-    }
-
-    // auto login user after register
+    const userRepository = getCustomRepository(UserRepository);
+    const user = await userRepository.createUser(options, hashedPass);
+    
     req.session.userId = user.id;
     return { user };
+    // try {
+
+    //   await Profile.create(profile).save();
+    //   await User.create(user).save();
+    // } catch (err) {
+    //   const errors = handleRegisterErrors(err.code, err.detail);
+    //   return { errors };
+    // }
+    // let user;
+    // try {
+    //   user = await User.create({
+    //     email: options.email,
+    //     username: options.username,
+    //     password: hashedPass,
+    //   }).save();
+    // } catch (err) {
+    //   const errors = handleRegisterErrors(err.code, err.detail);
+    //   return { errors };
+    // }
+
+    // auto login user after register
+    // req.session.userId = user.id;
+    // return { user };
   }
 
   @Mutation(() => UserResponse)

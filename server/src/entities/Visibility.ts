@@ -17,6 +17,6 @@ export class Visibility extends BaseEntity {
   id: number;
 
   @Field()
-  @Column()
+  @Column({ length: 15, unique: true })
   type: string;
 }

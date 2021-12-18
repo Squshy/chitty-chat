@@ -18,7 +18,7 @@ export class Profile extends BaseEntity {
   id: number;
 
   @OneToMany(() => Visibility, (visibility) => visibility.id)
-  @Column({ unique: true })
+  @Column()
   visibility: number;
 
   @Field()
