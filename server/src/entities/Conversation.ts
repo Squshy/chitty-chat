@@ -4,25 +4,28 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { DEFAULT_AVATAR } from "../constants";
+import { Participant } from "./Participant";
 
 @ObjectType()
 @Entity()
 export class Conversation extends BaseEntity {
   @Field()
+  @OneToMany(() => Participant, participant => participant.conversation)
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: string;
 
   @Field()
   @Column({ nullable: false })
-  title: string;
+  title!: string;
 
   @Field()
   @Column({ nullable: false, default: DEFAULT_AVATAR })
-  image: string;
+  image!: string;
 
   /* 
     A 'primary' conversation refers to the initial conversation between two users.
@@ -30,7 +33,7 @@ export class Conversation extends BaseEntity {
   */
   @Field()
   @Column({ default: true, nullable: false })
-  primary: boolean;
+  primary!: boolean;
 
   @Field()
   @CreateDateColumn()
