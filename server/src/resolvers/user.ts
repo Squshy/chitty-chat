@@ -1,17 +1,11 @@
 import { hash as hashPassword, verify } from "argon2";
-import {
-  Arg,
-  Ctx,
-  Mutation,
-  Query,
-  Resolver
-} from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { v4 as uuid } from "uuid";
 import {
   COOKIE_NAME,
   FORGOT_PASSWORD_DAY_LIMIT,
   FORGOT_PASSWORD_PREFIX,
-  __prod__
+  __prod__,
 } from "../constants";
 import { User } from "../entities/User";
 import { MyContext } from "../types";
@@ -19,9 +13,7 @@ import { handleRegisterErrors } from "../util/handleRegisterErrors";
 import { sendEmail } from "../util/sendEmail";
 import { validatePassword } from "../util/validatePassword";
 import { validateRegister } from "../util/validateUsernamePasswordInput";
-import {
-  UsernamePasswordInput, UserResponse
-} from "./responses/userResponses";
+import { UsernamePasswordInput, UserResponse } from "./responses/userResponses";
 
 @Resolver(User)
 export class UserResolver {
@@ -46,7 +38,6 @@ export class UserResolver {
       user = await User.create({
         email: options.email,
         username: options.username,
-        displayName: options.username,
         password: hashedPass,
       }).save();
     } catch (err) {
