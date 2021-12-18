@@ -31,8 +31,8 @@ export class User extends BaseEntity {
   email!: string;
 
   @OneToOne(() => Profile)
-  @JoinColumn()
-  profile: Profile;
+  @Column()
+  profile: number;
 
   @Column()
   password!: string;

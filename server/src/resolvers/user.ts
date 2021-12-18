@@ -38,33 +38,18 @@ export class UserResolver {
     const hashedPass = await hashPassword(options.password);
 
     const userRepository = getCustomRepository(UserRepository);
-    const user = await userRepository.createUser(options, hashedPass);
-    
+    let user;
+    try {
+      const result = await userRepository.createUser(options, hashedPass);
+      user = result[0];
+    } catch (err) {
+      const errors = handleRegisterErrors(err.code, err.detail);
+      return { errors };
+    }
+    console.log("User:", user);
+    // auto login user after register
     req.session.userId = user.id;
     return { user };
-    // try {
-
-    //   await Profile.create(profile).save();
-    //   await User.create(user).save();
-    // } catch (err) {
-    //   const errors = handleRegisterErrors(err.code, err.detail);
-    //   return { errors };
-    // }
-    // let user;
-    // try {
-    //   user = await User.create({
-    //     email: options.email,
-    //     username: options.username,
-    //     password: hashedPass,
-    //   }).save();
-    // } catch (err) {
-    //   const errors = handleRegisterErrors(err.code, err.detail);
-    //   return { errors };
-    // }
-
-    // auto login user after register
-    // req.session.userId = user.id;
-    // return { user };
   }
 
   @Mutation(() => UserResponse)

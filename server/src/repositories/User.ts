@@ -39,31 +39,28 @@ export class UserRepository extends Repository<User> {
   async createUser(
     options: UsernamePasswordInput,
     password: string
-  ): Promise<User> {
-    // const profile = new Profile();
-    // profile.avatar = DEFAULT_AVATAR;
-    // profile.displayName = options.username;
-
-    await getConnection().query(`
-    WITH prof (vis, avatar, display) AS
-      ( VALUES
-        ('public', '${DEFAULT_AVATAR}', '${options.username}')
+  ): Promise<User[]> {
+    return getConnection().query(
+      `
+    WITH new_profile AS 
+      (
+        WITH ins (vis, avatar, display) AS
+          ( VALUES
+            ('public', $1, $2)
+          )
+        INSERT INTO profile (visibility, avatar, "displayName")
+        
+        SELECT 
+            visibility.id, ins.avatar, ins.display
+        FROM 
+            visibility JOIN ins ON ins.vis = visibility.type 
+        RETURNING id
       )
-    INSERT INTO profile (visibility, avatar, "displayName")
-    
-    SELECT 
-        visibility.id, prof.avatar, prof.display
-    FROM 
-        visibility JOIN prof ON prof.vis = visibility.type;
-    `);
-
-    const user = new User();
-    user.email = options.email;
-    user.username = options.username;
-    user.password = password;
-    return User.create(user).save();
-    // return getConnection().query(`
-
-    // `);
+    INSERT INTO "user" (username, email, profile, password)
+    VALUES
+    ($2, $3, (SELECT id FROM new_profile), $4) RETURNING *;
+    `,
+      [DEFAULT_AVATAR, options.username, options.email, password]
+    );
   }
 }
