@@ -39,8 +39,8 @@ export class UserRepository extends Repository<User> {
   async createUser(
     options: UsernamePasswordInput,
     password: string
-  ): Promise<User[]> {
-    return getConnection().query(
+  ): Promise<User> {
+    const user = await getConnection().query(
       `
     WITH new_profile AS 
       (
@@ -56,11 +56,12 @@ export class UserRepository extends Repository<User> {
             visibility JOIN ins ON ins.vis = visibility.type 
         RETURNING id
       )
-    INSERT INTO "user" (username, email, profile, password)
+    INSERT INTO "user" (username, email, "profileId", password)
     VALUES
-    ($2, $3, (SELECT id FROM new_profile), $4) RETURNING *;
+    ($2, $3, (SELECT id FROM new_profile), $4) RETURNING id;
     `,
       [DEFAULT_AVATAR, options.username, options.email, password]
     );
+    return User.findOne(user.id, { relations: ["profile"] });
   }
 }

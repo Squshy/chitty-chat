@@ -40,13 +40,12 @@ export class UserResolver {
     const userRepository = getCustomRepository(UserRepository);
     let user;
     try {
-      const result = await userRepository.createUser(options, hashedPass);
-      user = result[0];
+      user = await userRepository.createUser(options, hashedPass);
     } catch (err) {
       const errors = handleRegisterErrors(err.code, err.detail);
       return { errors };
     }
-    console.log("User:", user);
+    
     // auto login user after register
     req.session.userId = user.id;
     return { user };

@@ -30,9 +30,10 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   email!: string;
 
+  @Field()
   @OneToOne(() => Profile)
-  @Column()
-  profile: number;
+  @JoinColumn()
+  profile: Profile;
 
   @Column()
   password!: string;
