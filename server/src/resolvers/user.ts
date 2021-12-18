@@ -43,7 +43,7 @@ export class UserResolver {
       const errors = handleRegisterErrors(err.code, err.detail);
       return { errors };
     }
-    
+
     // auto login user after register
     req.session.userId = user.id;
     return { user };
@@ -51,15 +51,16 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg("usernameOrEmail") usernameOrEmail: String,
+    @Arg("usernameOrEmail") usernameOrEmail: string,
     @Arg("password") password: string,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
-    const user = await User.findOne(
-      usernameOrEmail.includes("@")
-        ? { where: { email: usernameOrEmail } }
-        : { where: { username: usernameOrEmail.toLowerCase() } }
-    );
+    const userRepository = getCustomRepository(UserRepository);
+    let user;
+    if (usernameOrEmail.includes("@"))
+      user = await userRepository.getUser({ email: usernameOrEmail });
+    else user = await userRepository.getUser({ username: usernameOrEmail });
+
     if (!user) {
       return {
         errors: [

@@ -3,6 +3,7 @@ import { DEFAULT_AVATAR } from "../constants";
 import { Profile } from "../entities/Profile";
 import { User } from "../entities/User";
 import { UsernamePasswordInput } from "../resolvers/responses/userResponses";
+import { GetUser } from "../types";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -36,6 +37,31 @@ export class UserRepository extends Repository<User> {
     );
   }
 
+  getUser(s: GetUser): Promise<User | undefined> {
+    const whereClause = () => {
+      if (s.id) return "user.id = :id";
+      if (s.email) return "user.email = :email";
+      if (s.username) return "user.username = :username";
+      return "user.id = :id";
+    };
+
+    const variable = () => {
+      if (s.id) return { id: s.id };
+      if (s.email) return { email: s.email };
+      if (s.username) return { username: s.username };
+      return { id: s.id };
+    };
+
+    return getConnection()
+      .createQueryBuilder()
+      .select("user")
+      .from(User, "user")
+      .leftJoinAndSelect("user.profile", "profile")
+      .leftJoinAndSelect("profile.visibility", "visibility")
+      .where(whereClause(), variable())
+      .getOne();
+  }
+
   async createUser(
     options: UsernamePasswordInput,
     password: string
@@ -62,22 +88,13 @@ export class UserRepository extends Repository<User> {
     `,
       [DEFAULT_AVATAR, options.username, options.email, password]
     );
-    const id = ret[0].id;
+    const id = ret[0].id as string;
     let user;
     try {
-      user = await getConnection()
-        .createQueryBuilder()
-        .select("user")
-        .from(User, "user")
-        .leftJoinAndSelect("user.profile", "profile")
-        .leftJoinAndSelect("profile.visibility", "visibility")
-        .where("user.id = :id", { id: id })
-        .getOne();
+      user = await this.getUser({ id: id });
     } catch (err) {
       console.error(err);
     }
-    console.log("id:", id);
-    console.log("User:", user);
     if (user) return user;
     throw "Cannot find newly created user for some reason";
   }
