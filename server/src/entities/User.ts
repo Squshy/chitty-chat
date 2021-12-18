@@ -37,7 +37,7 @@ export class User extends BaseEntity {
   @Column()
   password!: string;
 
-  @OneToMany(() => Friend, (friend) => friend.user || friend.friend, {
+  @OneToMany(() => Friend, (friend) => friend.user && friend.friend, {
     onDelete: "CASCADE",
   })
   @JoinTable()

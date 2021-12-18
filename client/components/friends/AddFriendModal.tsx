@@ -21,12 +21,10 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
   closeModal,
   isOpen,
 }) => {
-  const [
-    searchForUser,
-    { loading: searchLoading, error, data: searchData, refetch },
-  ] = useLazyQuery<SearchForUserQuery>(SearchForUserDocument, {
-    fetchPolicy: "no-cache",
-  });
+  const [searchForUser, { loading: searchLoading, data: searchData, refetch }] =
+    useLazyQuery<SearchForUserQuery>(SearchForUserDocument, {
+      fetchPolicy: "no-cache",
+    });
   const [addFriend, { loading: addFriendLoading }] = useAddFriendMutation({
     update(cache, { data }) {
       if (data?.addFriend.friend) {
@@ -87,15 +85,14 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
   };
 
   const validateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value;
-    if (text.length <= 2 || text.length > 14) return;
-    debounce(
-      () =>
-        searchForUser({
-          variables: { username: text },
-        }),
-      250
-    )();
+    debounce(() => {
+      const text = e.target.value;
+      if (text.length <= 2 || text.length > 14) return;
+
+      searchForUser({
+        variables: { username: text },
+      });
+    }, 250)();
   };
 
   return (
