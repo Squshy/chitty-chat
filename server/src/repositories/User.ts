@@ -17,16 +17,6 @@ export class UserRepository extends Repository<User> {
   }
 
   getFriends(userId: string): Promise<User[]> {
-    // return getConnection()
-    //   .createQueryBuilder()
-    //   .select("user")
-    //   .from(User, "user")
-    //   .leftJoinAndSelect("user.profile", "profile")
-    //   .leftJoinAndSelect("profile.visibility", "visibility")
-    //   .leftJoin(`user.friends`, `friend`)
-    //   .where(`"user".id <> :id AND friend.confirmed = TRUE`, { id: userId })
-    //   .getMany();
-
     return getConnection().query(
       ` SELECT U.*, profile.*
         FROM "user" U
@@ -50,16 +40,6 @@ export class UserRepository extends Repository<User> {
         WHERE U.id <> $1 AND f.confirmed = TRUE`,
       [userId]
     );
-
-    // return getConnection().query(
-    //   ` SELECT U.*, P.*, V.*
-    //     FROM "user" U
-    //     LEFT JOIN profile P ON P.id = U."profileId"
-    //     LEFT JOIN visibility V ON V.id = P."visibilityId"
-    //     LEFT JOIN friend f ON U.id = f.user_id OR U.id = f.friend_id
-    //     WHERE U.id <> $1 AND f.confirmed = TRUE`,
-    //   [userId]
-    // );
   }
 
   getFriendRequests(userId: string): Promise<User[]> {
@@ -69,6 +49,38 @@ export class UserRepository extends Repository<User> {
         LEFT JOIN friend f ON U.id = f.user_id AND f.friend_id = $1
         WHERE U.id <> $1 AND f.confirmed = FALSE`,
       [userId]
+    );
+  }
+
+  searchForUser(myId: string, username: string): Promise<User[]> {
+    return getConnection().query(
+      `
+        SELECT U.*, username <-> $2 AS dist, profile.*
+        FROM "user" U
+        LEFT JOIN LATERAL (
+          SELECT json_build_object(
+            'displayName', profile."displayName", 
+            'avatar', profile.avatar, 
+            'id', profile.id,
+
+            'visibility', json_build_object(
+                'type', V.type,
+                'id', V.id
+              )
+
+            ) AS profile, V.*
+          FROM profile
+          LEFT JOIN visibility V ON V.id = profile."visibilityId"
+          WHERE profile.id = U."profileId"
+        ) profile ON TRUE
+        LEFT JOIN friend f
+          ON f.user_id = U.id AND f.friend_id = $1
+          OR f.user_id = $1 AND f.friend_id = U.id
+        WHERE U.id <> $1 AND f.user_id IS NULL OR U.id <> $1 AND f.friend_id IS NULL
+        ORDER BY dist
+        LIMIT 10
+      `,
+      [myId, username]
     );
   }
 
