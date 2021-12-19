@@ -1,6 +1,5 @@
 import { EntityRepository, getConnection, Repository } from "typeorm";
 import { DEFAULT_AVATAR } from "../constants";
-import { Profile } from "../entities/Profile";
 import { User } from "../entities/User";
 import { UsernamePasswordInput } from "../resolvers/responses/userResponses";
 import { GetUser } from "../types";
@@ -18,13 +17,49 @@ export class UserRepository extends Repository<User> {
   }
 
   getFriends(userId: string): Promise<User[]> {
+    // return getConnection()
+    //   .createQueryBuilder()
+    //   .select("user")
+    //   .from(User, "user")
+    //   .leftJoinAndSelect("user.profile", "profile")
+    //   .leftJoinAndSelect("profile.visibility", "visibility")
+    //   .leftJoin(`user.friends`, `friend`)
+    //   .where(`"user".id <> :id AND friend.confirmed = TRUE`, { id: userId })
+    //   .getMany();
+
     return getConnection().query(
-      ` SELECT *
+      ` SELECT U.*, profile.*
         FROM "user" U
+        LEFT JOIN LATERAL (
+          SELECT json_build_object(
+            'displayName', profile."displayName", 
+            'avatar', profile.avatar, 
+            'id', profile.id,
+
+            'visibility', json_build_object(
+                'type', V.type,
+                'id', V.id
+              )
+
+            ) AS profile, V.*
+          FROM profile
+          LEFT JOIN visibility V ON V.id = profile."visibilityId"
+          WHERE profile.id = U."profileId"
+        ) profile ON TRUE
         LEFT JOIN friend f ON U.id = f.user_id OR U.id = f.friend_id
         WHERE U.id <> $1 AND f.confirmed = TRUE`,
       [userId]
     );
+
+    // return getConnection().query(
+    //   ` SELECT U.*, P.*, V.*
+    //     FROM "user" U
+    //     LEFT JOIN profile P ON P.id = U."profileId"
+    //     LEFT JOIN visibility V ON V.id = P."visibilityId"
+    //     LEFT JOIN friend f ON U.id = f.user_id OR U.id = f.friend_id
+    //     WHERE U.id <> $1 AND f.confirmed = TRUE`,
+    //   [userId]
+    // );
   }
 
   getFriendRequests(userId: string): Promise<User[]> {
@@ -96,6 +131,6 @@ export class UserRepository extends Repository<User> {
       console.error(err);
     }
     if (user) return user;
-    throw "Cannot find newly created user for some reason";
+    else throw "Cannot find newly created user for some reason";
   }
 }

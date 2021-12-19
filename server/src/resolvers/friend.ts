@@ -64,7 +64,7 @@ export class FriendResolver {
       await Friend.create({
         confirmed: false,
         friendId: friend!.id,
-        userId: req.session.userId,
+        userId: req.session.userId!,
       }).save();
     } catch (error) {
       return { error };
@@ -155,7 +155,11 @@ export class FriendResolver {
   @UseMiddleware(isAuth)
   async friends(@Ctx() { req }: MyContext): Promise<User[]> {
     const userRepository = getCustomRepository(UserRepository);
-    return await userRepository.getFriends(req.session.userId as string);
+    const friends = await userRepository.getFriends(
+      req.session.userId as string
+    );
+    console.log("Friends:", friends);
+    return friends;
   }
 
   @Query(() => [User])

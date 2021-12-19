@@ -12,7 +12,7 @@ import { Profile } from "./Profile";
 @Entity()
 export class Visibility extends BaseEntity {
   @OneToMany(() => Profile, (profile) => profile.visibility)
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: "int" })
   id: number;
 
   @Field()
