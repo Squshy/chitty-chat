@@ -76,7 +76,10 @@ export class UserRepository extends Repository<User> {
         LEFT JOIN friend f
           ON f.user_id = U.id AND f.friend_id = $1
           OR f.user_id = $1 AND f.friend_id = U.id
-        WHERE U.id <> $1 AND f.user_id IS NULL OR U.id <> $1 AND f.friend_id IS NULL
+        WHERE U.id <> $1 
+          AND f.user_id IS NULL OR U.id <> $1 
+          AND f.friend_id IS NULL
+          AND username <% $2
         ORDER BY dist
         LIMIT 10
       `,

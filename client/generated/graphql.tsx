@@ -83,6 +83,15 @@ export type MutationRevokeFriendRequestArgs = {
   username: Scalars['String'];
 };
 
+export type Profile = {
+  __typename?: 'Profile';
+  avatar: Scalars['String'];
+  createdAt: Scalars['DateTime'];
+  displayName: Scalars['String'];
+  updatedAt: Scalars['DateTime'];
+  visibility: Visibility;
+};
+
 export type Query = {
   __typename?: 'Query';
   friendRequests: Array<User>;
@@ -100,12 +109,11 @@ export type QuerySearchForUserArgs = {
 export type User = {
   __typename?: 'User';
   createdAt: Scalars['DateTime'];
-  displayName: Scalars['String'];
   email: Scalars['String'];
   id: Scalars['String'];
+  profile: Profile;
   updatedAt: Scalars['DateTime'];
   username: Scalars['String'];
-  visibility: Scalars['String'];
 };
 
 export type UserResponse = {
@@ -120,31 +128,36 @@ export type UsernamePasswordInput = {
   username: Scalars['String'];
 };
 
-export type FriendFragment = { __typename?: 'User', username: string, displayName: string };
+export type Visibility = {
+  __typename?: 'Visibility';
+  type: Scalars['String'];
+};
 
-export type FriendResponseFragment = { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, displayName: string } | null | undefined };
+export type FriendFragment = { __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } };
 
-export type SelfFragment = { __typename?: 'User', id: string, username: string, email: string, displayName: string };
+export type FriendResponseFragment = { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined };
 
-export type UserFragment = { __typename?: 'User', id: string, username: string, email: string, displayName: string };
+export type SelfFragment = { __typename?: 'User', username: string, email: string, id: string, createdAt: any, profile: { __typename?: 'Profile', displayName: string, avatar: string, visibility: { __typename?: 'Visibility', type: string } } };
+
+export type UserFragment = { __typename?: 'User', username: string, email: string, id: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } };
 
 export type UserErrorFragment = { __typename?: 'FieldError', field: string, message: string };
 
-export type UserResponseFragment = { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined };
+export type UserResponseFragment = { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', username: string, email: string, id: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined };
 
 export type AcceptFriendRequestMutationVariables = Exact<{
   username: Scalars['String'];
 }>;
 
 
-export type AcceptFriendRequestMutation = { __typename?: 'Mutation', acceptFriendRequest: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, displayName: string } | null | undefined } };
+export type AcceptFriendRequestMutation = { __typename?: 'Mutation', acceptFriendRequest: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined } };
 
 export type AddFriendMutationVariables = Exact<{
   username: Scalars['String'];
 }>;
 
 
-export type AddFriendMutation = { __typename?: 'Mutation', addFriend: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, displayName: string } | null | undefined } };
+export type AddFriendMutation = { __typename?: 'Mutation', addFriend: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined } };
 
 export type ChangePasswordMutationVariables = Exact<{
   newPassword: Scalars['String'];
@@ -152,14 +165,14 @@ export type ChangePasswordMutationVariables = Exact<{
 }>;
 
 
-export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined } };
+export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', username: string, email: string, id: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined } };
 
 export type DeclineFriendRequestMutationVariables = Exact<{
   username: Scalars['String'];
 }>;
 
 
-export type DeclineFriendRequestMutation = { __typename?: 'Mutation', declineFriendRequest: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, displayName: string } | null | undefined } };
+export type DeclineFriendRequestMutation = { __typename?: 'Mutation', declineFriendRequest: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined } };
 
 export type ForgotPasswordMutationVariables = Exact<{
   email: Scalars['String'];
@@ -174,7 +187,7 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined } };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', username: string, email: string, id: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined } };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -186,63 +199,72 @@ export type RegisterMutationVariables = Exact<{
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined } };
+export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'User', username: string, email: string, id: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined } };
 
 export type RevokeFriendRequestMutationVariables = Exact<{
   username: Scalars['String'];
 }>;
 
 
-export type RevokeFriendRequestMutation = { __typename?: 'Mutation', revokeFriendRequest: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, displayName: string } | null | undefined } };
+export type RevokeFriendRequestMutation = { __typename?: 'Mutation', revokeFriendRequest: { __typename?: 'FriendResponse', error?: string | null | undefined, friend?: { __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined } };
 
 export type FriendRequestsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type FriendRequestsQuery = { __typename?: 'Query', friendRequests: Array<{ __typename?: 'User', username: string, displayName: string }> };
+export type FriendRequestsQuery = { __typename?: 'Query', friendRequests: Array<{ __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } }> };
 
 export type FriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type FriendsQuery = { __typename?: 'Query', friends: Array<{ __typename?: 'User', username: string, displayName: string }> };
+export type FriendsQuery = { __typename?: 'Query', friends: Array<{ __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } }> };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, displayName: string } | null | undefined };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', username: string, email: string, id: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } } | null | undefined };
 
 export type PendingFriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PendingFriendsQuery = { __typename?: 'Query', pendingFriends: Array<{ __typename?: 'User', username: string, displayName: string }> };
+export type PendingFriendsQuery = { __typename?: 'Query', pendingFriends: Array<{ __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } }> };
 
 export type SearchForUserQueryVariables = Exact<{
   username: Scalars['String'];
 }>;
 
 
-export type SearchForUserQuery = { __typename?: 'Query', searchForUser?: Array<{ __typename?: 'User', username: string, displayName: string }> | null | undefined };
+export type SearchForUserQuery = { __typename?: 'Query', searchForUser?: Array<{ __typename?: 'User', username: string, profile: { __typename?: 'Profile', displayName: string, avatar: string } }> | null | undefined };
 
 export const FriendFragmentDoc = gql`
     fragment Friend on User {
   username
-  displayName
+  profile {
+    displayName
+    avatar
+  }
 }
     `;
 export const FriendResponseFragmentDoc = gql`
     fragment FriendResponse on FriendResponse {
   error
   friend {
-    username
-    displayName
+    ...Friend
   }
 }
-    `;
+    ${FriendFragmentDoc}`;
 export const SelfFragmentDoc = gql`
     fragment Self on User {
-  id
   username
   email
-  displayName
+  profile {
+    displayName
+    visibility {
+      type
+    }
+    avatar
+  }
+  id
+  createdAt
 }
     `;
 export const UserErrorFragmentDoc = gql`
@@ -253,10 +275,13 @@ export const UserErrorFragmentDoc = gql`
     `;
 export const UserFragmentDoc = gql`
     fragment User on User {
-  id
   username
   email
-  displayName
+  profile {
+    displayName
+    avatar
+  }
+  id
 }
     `;
 export const UserResponseFragmentDoc = gql`

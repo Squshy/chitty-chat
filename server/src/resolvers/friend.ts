@@ -23,26 +23,12 @@ export class FriendResolver {
     @Arg("username") username: string,
     @Ctx() { req }: MyContext
   ) {
-    // const users = await getConnection().query(
-    //   `
-    //   SELECT *, username <-> $2 AS dist
-    //   FROM "user" U
-    //   LEFT JOIN friend f
-    //     ON f.user_id = U.id AND f.friend_id = $1
-    //     OR f.user_id = $1 AND f.friend_id = U.id
-    //   WHERE U.id <> $1 AND f.user_id IS NULL OR U.id <> $1 AND f.friend_id IS NULL
-    //   ORDER BY dist
-    //   LIMIT 10
-    // `,
-    //   [req.session.userId, username]
-    // );
+    // TO-DO: Set it so the distance of the trgm only shows those less than 1
     const userRepository = getCustomRepository(UserRepository);
-    const users = await userRepository.searchForUser(
+    return await userRepository.searchForUser(
       req.session.userId as string,
       username
     );
-    console.log("users:", users);
-    return users;
   }
 
   @Mutation(() => FriendResponse)
