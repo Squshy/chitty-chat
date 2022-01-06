@@ -1,17 +1,11 @@
 import { hash as hashPassword, verify } from "argon2";
-import {
-  Arg,
-  Ctx,
-  Mutation,
-  Query,
-  Resolver
-} from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { v4 as uuid } from "uuid";
 import {
   COOKIE_NAME,
   FORGOT_PASSWORD_DAY_LIMIT,
   FORGOT_PASSWORD_PREFIX,
-  __prod__
+  __prod__,
 } from "../constants";
 import { User } from "../entities/User";
 import { MyContext } from "../types";
@@ -19,9 +13,9 @@ import { handleRegisterErrors } from "../util/handleRegisterErrors";
 import { sendEmail } from "../util/sendEmail";
 import { validatePassword } from "../util/validatePassword";
 import { validateRegister } from "../util/validateUsernamePasswordInput";
-import {
-  UsernamePasswordInput, UserResponse
-} from "./responses/userResponses";
+import { UsernamePasswordInput, UserResponse } from "./responses/userResponses";
+import { getCustomRepository } from "typeorm";
+import { UserRepository } from "../repositories/User";
 
 @Resolver(User)
 export class UserResolver {
@@ -41,14 +35,10 @@ export class UserResolver {
     if (errors) return { errors };
     const hashedPass = await hashPassword(options.password);
 
+    const userRepository = getCustomRepository(UserRepository);
     let user;
     try {
-      user = await User.create({
-        email: options.email,
-        username: options.username,
-        displayName: options.username,
-        password: hashedPass,
-      }).save();
+      user = await userRepository.createUser(options, hashedPass);
     } catch (err) {
       const errors = handleRegisterErrors(err.code, err.detail);
       return { errors };
@@ -61,15 +51,16 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg("usernameOrEmail") usernameOrEmail: String,
+    @Arg("usernameOrEmail") usernameOrEmail: string,
     @Arg("password") password: string,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
-    const user = await User.findOne(
-      usernameOrEmail.includes("@")
-        ? { where: { email: usernameOrEmail } }
-        : { where: { username: usernameOrEmail.toLowerCase() } }
-    );
+    const userRepository = getCustomRepository(UserRepository);
+    let user;
+    if (usernameOrEmail.includes("@"))
+      user = await userRepository.getUser({ email: usernameOrEmail });
+    else user = await userRepository.getUser({ username: usernameOrEmail });
+
     if (!user) {
       return {
         errors: [

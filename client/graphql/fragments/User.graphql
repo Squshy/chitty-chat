@@ -1,6 +1,9 @@
 fragment User on User {
-  id
   username
   email
-  displayName
+  profile {
+    displayName
+    avatar
+  }
+  id
 }

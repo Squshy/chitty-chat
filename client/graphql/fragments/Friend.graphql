@@ -1,4 +1,7 @@
 fragment Friend on User {
   username
-  displayName
+  profile {
+    displayName
+    avatar
+  }
 }

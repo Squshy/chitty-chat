@@ -20,23 +20,15 @@ export class FriendResolver {
   @Query(() => [User], { nullable: true })
   @UseMiddleware(isAuth)
   async searchForUser(
-    @Arg("username") username: String,
+    @Arg("username") username: string,
     @Ctx() { req }: MyContext
   ) {
-    const users = await getConnection().query(
-      `
-      SELECT *, username <-> $2 AS dist
-      FROM "user" U
-      LEFT JOIN friend f 
-        ON f.user_id = U.id AND f.friend_id = $1 
-        OR f.user_id = $1 AND f.friend_id = U.id
-      WHERE U.id <> $1 AND f.user_id IS NULL OR U.id <> $1 AND f.friend_id IS NULL
-      ORDER BY dist
-      LIMIT 10
-    `,
-      [req.session.userId, username]
+    // TO-DO: Set it so the distance of the trgm only shows those less than 1
+    const userRepository = getCustomRepository(UserRepository);
+    return await userRepository.searchForUser(
+      req.session.userId as string,
+      username
     );
-    return users;
   }
 
   @Mutation(() => FriendResponse)
@@ -64,7 +56,7 @@ export class FriendResolver {
       await Friend.create({
         confirmed: false,
         friendId: friend!.id,
-        userId: req.session.userId,
+        userId: req.session.userId!,
       }).save();
     } catch (error) {
       return { error };
@@ -155,7 +147,11 @@ export class FriendResolver {
   @UseMiddleware(isAuth)
   async friends(@Ctx() { req }: MyContext): Promise<User[]> {
     const userRepository = getCustomRepository(UserRepository);
-    return await userRepository.getFriends(req.session.userId as string);
+    const friends = await userRepository.getFriends(
+      req.session.userId as string
+    );
+    console.log("Friends:", friends);
+    return friends;
   }
 
   @Query(() => [User])

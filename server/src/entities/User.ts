@@ -1,15 +1,19 @@
+import { MAX_USERNAME_LENGTH } from "../constants";
 import { Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { Friend } from "./Friend";
+import { Profile } from "./Profile";
 
 @ObjectType()
 @Entity()
@@ -19,7 +23,7 @@ export class User extends BaseEntity {
   id!: string;
 
   @Field()
-  @Column({ unique: true })
+  @Column({ unique: true, length: MAX_USERNAME_LENGTH })
   username!: string;
 
   @Field()
@@ -27,12 +31,9 @@ export class User extends BaseEntity {
   email!: string;
 
   @Field()
-  @Column({ default: "user" })
-  displayName!: string;
-
-  @Field()
-  @Column({ default: "public" })
-  visibility!: "public" | "private";
+  @OneToOne(() => Profile)
+  @JoinColumn()
+  profile: Profile;
 
   @Column()
   password!: string;

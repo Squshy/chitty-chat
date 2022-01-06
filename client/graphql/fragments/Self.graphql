@@ -1,6 +1,13 @@
 fragment Self on User {
-  id
   username
   email
-  displayName
+  profile {
+    displayName
+    visibility {
+      type
+    }
+    avatar
+  }
+  id
+  createdAt
 }
